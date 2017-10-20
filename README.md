@@ -18,17 +18,15 @@ The following steps will create a LightSail Instance for Ubuntu.
 
 3. Choose **Linux/Unix** platform, **OS Only** and  **Ubuntu 16.04 LTS**.
 
-![alt text](screen1.png "screen1")
-
 <img src="screen1.png" width="600px">
 
 4. Choose a instance plan.
 
-![alt text](screen2.png "screen2")
+<img src="screen2.png" width="600px">
 
 5. You can name your instance or just leave the default name provided by AWS.
 
-![alt text](screen3.png "screen3")
+<img src="screen3.png" width="600px">
 
 6. Click **Create**.
 
@@ -103,8 +101,8 @@ To                         Action      From
 10. Now, click on the **Manage** option of the Amazon Lightsail Instance, 
 then the **Networking** tab, and then change the firewall configuration to match the internal firewall settings above (only ports 80(TCP), 123(UDP), and 2200(TCP)should be allowed; make sure to deny the default port 22).
 
-![alt text](screen4.png "screen4")
-![alt text](screen5.png "screen5")
+<img src="screen4.png" width="600px">
+<img src="screen5.png" width="600px">
 
 ## Give grader access
 
@@ -198,7 +196,7 @@ Universal Time is now:  Fri Oct 20 01:55:16 UTC 2017.
 
 2. Check to make sure Apache is working by using the public IP of the Amazon Lightsail instance as a URL in a browser. If yes, a page with the title **Apache2 Ubuntu Default Page** should load.
 
-![alt text](screen6.png "screen6")
+<img src="screen6.png" width="600px">
 
 3. Install the mod_wsgi package: `sudo apt-get install libapache2-mod-wsgi python-dev`.
 
