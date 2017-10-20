@@ -18,7 +18,7 @@ The following steps will create a LightSail Instance for Ubuntu.
 
 3. Choose **Linux/Unix** platform, **OS Only** and  **Ubuntu 16.04 LTS**.
 
-![alt text](screen1.png "screen1")
+![alt text](screen1.png "screen1"){:height="50%" width="50%"}
 
 4. Choose a instance plan.
 
@@ -142,7 +142,7 @@ User grader may run the following commands on ip-172-26-13-170.us-east-2.compute
 ### 8. Create an SSH key pair for grader using the `ssh-keygen` tool
 
 1. Run `ssh-keygen` on the local machine.
-
+
 2. Enter file in which to save the key (for this example, I give the name `grader_key`) in the local directory `~/.ssh`.
 
 3. Enter in a passphrase twice. Two files will be generated (for this example,  `~/.ssh/grader_key` and `~/.ssh/grader_key.pub`).
