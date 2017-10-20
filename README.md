@@ -18,7 +18,9 @@ The following steps will create a LightSail Instance for Ubuntu.
 
 3. Choose **Linux/Unix** platform, **OS Only** and  **Ubuntu 16.04 LTS**.
 
-![alt text](screen1.png "screen1"){:height="50%" width="50%"}
+![alt text](screen1.png "screen1")
+
+<img src="screen1.png" width="800px">
 
 4. Choose a instance plan.
 
