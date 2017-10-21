@@ -18,15 +18,15 @@ The following steps will create a LightSail Instance for Ubuntu.
 
 3. Choose **Linux/Unix** platform, **OS Only** and  **Ubuntu 16.04 LTS**.
 
-<img src="screen1.png" width="600px">
+<img src="images/screen1.png" width="600px">
 
 4. Choose a instance plan.
 
-<img src="screen2.png" width="600px">
+<img src="images/screen2.png" width="600px">
 
 5. You can name your instance or just leave the default name provided by AWS.
 
-<img src="screen3.png" width="600px">
+<img src="images/screen3.png" width="600px">
 
 6. Click **Create**.
 
@@ -81,7 +81,7 @@ Configure the Uncomplicated Firewall (UFW) to only allow incoming connections fo
 
 8. enable the ufw firewall: `sudo ufw enable`.
 
-9. Check which ports are open: `sudo ufw status`. You should see like this:
+9. Check which ports are open: `sudo ufw status`. You should see like this:
 
 ```
 Status: active
@@ -99,10 +99,10 @@ To                         Action      From
 ```
 
 10. Now, click on the **Manage** option of the Amazon Lightsail Instance, 
-then the **Networking** tab, and then change the firewall configuration to match the internal firewall settings above (only ports 80(TCP), 123(UDP), and 2200(TCP)should be allowed; make sure to deny the default port 22).
+then the **Networking** tab, and then change the firewall configuration to match the internal firewall settings above (only ports 80(TCP), 123(UDP), and 2200(TCP) should be allowed). Make sure to deny the default port 22.
 
-<img src="screen4.png" width="600px">
-<img src="screen5.png" width="600px">
+<img src="images/screen4.png" width="600px">
+<img src="images/screen5.png" width="600px">
 
 ## Give grader access
 
@@ -124,7 +124,7 @@ root    ALL=(ALL:ALL) ALL
 3. Below this line, add a new line to give sudo privileges to **grader** user like this:
 ```
 root    ALL=(ALL:ALL) ALL
-newuser ALL=(ALL:ALL) ALL
+grader  ALL=(ALL:ALL) ALL
 ```
 
 4. Save and close the file by hitting **Ctrl-X**, followed by **Y**, and then hit **Enter** to confirm.
@@ -196,97 +196,97 @@ Universal Time is now:  Fri Oct 20 01:55:16 UTC 2017.
 
 2. Check to make sure Apache is working by using the public IP of the Amazon Lightsail instance as a URL in a browser. If yes, a page with the title **Apache2 Ubuntu Default Page** should load.
 
-<img src="screen6.png" width="600px">
+<img src="images/screen6.png" width="600px">
 
-3. Install the mod_wsgi package: `sudo apt-get install libapache2-mod-wsgi python-dev`.
+3. Install the mod_wsgi package: `sudo apt-get install libapache2-mod-wsgi python-dev`.<br>
+If you built your project with Python 3, you will need to install the Python 3 mod_wsgi package on your server: `sudo apt-get install libapache2-mod-wsgi-py3`.
 
 4. Make sure mod_wsgi is enabled by running `sudo a2enmod wsgi`.
 
 ### 11. Install and configure PostgreSQL
 
-Do not allow remote connections
-Create a new database user named catalog that has limited permissions to your catalog application database.
+#### Install PostgreSQL
 
-(14) 
-Install PostgreSQL and make sure PostgreSQL is not allowing remote connections
-Install PostgreSQL by running sudo apt-get install postgresql
-$ sudo apt-get install postgresql
-Open the /etc/postgresql/9.5/main/pg_hba.conf file
-$ sudo nano /etc/postgresql/9.5/main/pg_hba.conf
-Make sure it looks like this (comments have been removed here for easier reading):
-See https://github.com/boisalai/linux-server-configuration
-See also https://www.postgresql.org/docs/9.1/static/auth-pg-hba-conf.html
+1. Install PostgreSQL by running `sudo apt-get install postgresql`.
 
-(16) 
-# Create a new PostgreSQL user named catalog with limited permissions
-$ sudo su - postgres
-# Connect to psql (the terminal for interacting with PostgreSQL) by running psql
-$ psql
-# Create the catalog user by running CREATE ROLE catalog WITH LOGIN;
-CREATE ROLE catalog WITH LOGIN;
-# Next, give the catalog user the ability to create databases: ALTER ROLE catalog CREATEDB;
-ALTER ROLE catalog CREATEDB;
-# Finally, give the catalog user a password by running \password catalog
+2. Make sure PostgreSQL is not allowing remote connections. 
+To check that, open the `/etc/postgresql/9.5/main/pg_hba.conf` file and make sure it looks like this, if you removed the comments:
 
-\password catalog
-catalog [Enter]
-catalog [Enter]
+```
+local   all             postgres                                peer
+local   all             all                                     peer
+host    all             all             127.0.0.1/32            md5
+host    all             all             ::1/128                 md5
+```
 
-\du
+#### Create a new PostgreSQL user named `catalog` with limited permissions
+
+3. PostgreSQL creates a Linux user with the name postgres during installation; switch to this user by running `sudo su - postgres` (for security reasons, it is important to only use the postgres user for accessing the PostgreSQL software).
+
+4. Open PostgreSQL interactive terminal by running: `psql`.
+
+5. Create the catalog user with a password by running:<br>
+`postgres=# CREATE ROLE catalog WITH PASSWORD 'catalog';`
+
+6. Give to our new user the ability to create databases:<br>
+`postgres=# ALTER ROLE catalog CREATEDB;`
+
+7. List the existing roles:<br>
+`postgres=# \du`
+
+Your output should look like the following:
+```
                                    List of roles
  Role name |                         Attributes                         | Member of 
 -----------+------------------------------------------------------------+-----------
  catalog   | Create DB                                                  | {}
  postgres  | Superuser, Create role, Create DB, Replication, Bypass RLS | {}
- 
-\q
-exit
+```
 
-(17)
-Create a Linux user called catalog and a new PostgreSQL database
-$ sudo adduser catalog
-[sudo] password for alan: 
-Adding user `catalog' ...
-Adding new group `catalog' (1002) ...
-Adding new user `catalog' (1002) with group `catalog' ...
-Creating home directory `/home/catalog' ...
-Copying files from `/etc/skel' ...
-Enter new UNIX password: 
-Retype new UNIX password: 
-passwd: password updated successfully
-Changing the user information for catalog
-Enter the new value, or press ENTER for the default
-	Full Name []: Catalog User
-	Room Number []: 
-	Work Phone []: 
-	Home Phone []: 
-	Other []: 
-Is the information correct? [Y/n] 
+8. Exit psql by running `\q`.
 
-Give the catalog user sudo permissions
-$ sudo visudo
-add the following line below this one: catalog ALL=(ALL:ALL) ALL
+9. Switch back to the `grader` user by running `exit`.
 
-verify that catalog has sudo permissions
-$ sudo su - catalog
-$ sudo -l
-[sudo] password for catalog: [catalog|
-Matching Defaults entries for catalog on ip-172-26-1-254.us-east-2.compute.internal:
+#### Create a Linux user called `catalog`
+
+10. Create a new Linux user called catalog by running: `sudo adduser catalog`. Enter password and fill out information.
+
+11. Give to catalog user the permission to sudo. Run `sudo visudo`.
+
+12. Search for the lines that looks like this:
+```
+root    ALL=(ALL:ALL) ALL
+grader  ALL=(ALL:ALL) ALL
+```
+
+13. Below this line, add a new line to give sudo privileges to `catalog` user like this:
+```
+root    ALL=(ALL:ALL) ALL
+grader  ALL=(ALL:ALL) ALL
+catalog  ALL=(ALL:ALL) ALL
+```
+
+14. Save and close the file by hitting **Ctrl-X**, followed by **Y**, and then hit **Enter** to confirm.
+
+15. Verify that `catalog` has sudo permissions. Run `su - catalog`, enter the password, run `sudo -l` and enter the password again. You should see like this:
+
+```
+Matching Defaults entries for catalog on ip-172-26-13-170.us-east-2.compute.internal:
     env_reset, mail_badpass,
     secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
 
-User catalog may run the following commands on ip-172-26-1-254.us-east-2.compute.internal:
+User catalog may run the following commands on ip-172-26-13-170.us-east-2.compute.internal:
     (ALL : ALL) ALL
+```
 
-(18)
-While logged in as catalog, create a database called catalog by running createdb catalog
+#### Create a database called `catalog`
 
-$ createdb catalog
-catalog@ip-172-26-1-254:~$ psql
-psql (9.5.9)
-Type "help" for help.
+16. While logged in as `catalog`, create a database called catalog by running `createdb catalog`.
 
-catalog=> \l
+17. Run `psql` and then run `\l` to see that the new database has been created.
+
+Your output should look like the following:
+```
                                   List of databases
    Name    |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges   
 -----------+----------+----------+-------------+-------------+-----------------------
@@ -297,205 +297,168 @@ catalog=> \l
  template1 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
            |          |          |             |             | postgres=CTc/postgres
 (4 rows)
+```
 
-Switch back to the ubuntu user by running exit
-\q
-exit
+18. Exit psql by running `\q`.
 
-
+19. Switch back to the `grader` user by running `exit`.
 
 ### 12. Install git
 
-Install git and clone the catalog project
-$ sudo apt-get install git
-
-Pas nécessaire, mais bon...
-$ git config --global user.name "YOURNAME"
-$ git config --global user.email "YOU@DOMAIN.com"
-
-
-
+Install `git` by running the following commans: `sudo apt-get install git`.
 
 ## Deploy the Item Catalog project
 
 ### 13. Clone and setup the Item Catalog project from the Github repository 
 
-(20)
---> Puis-je recommencer avec seulement 'catalog' au lieu de 'catalogApp'...
-Create a directory called 'catalogApp/catalogApp' in the /var/www/ directory
-Create flask app taken from digitalocean
-See https://www.digitalocean.com/community/tutorials/how-to-deploy-a-flask-application-on-an-ubuntu-vps
-$ cd /var
-$ sudo mkdir www
-$ cd www
-$ sudo mkdir catalogApp
-$ cd catalogApp
-$ sudo mkdir catalogApp
+#### Clone the Item Catalog project
+
+1. Create a directory called `catalog` in the `/var/www/` directory by running: `sudo mkdir catalog`.
+
+2. Change to the `/var/www/catalog` directory, and clone the catalog project:<br>
+`sudo git clone https://github.com/boisalai/udacity-catalog-app.git catalog`.
+
+#### Setup the Item Catalog Project
+
+3. From the `/var/www` directory, change the ownership of the `catalog` directory to `grader` by running:<br>
+`sudo chown -R grader:grader catalog/`.
+
+4. Change to the `/var/www/catalog/catalog` directory.
+
+5. Rename the `application.py` file to `__init__.py` by running `mv application.py __init__.py`.
+
+6. In `__init__.py`, replace line 27<br>
+`app.run(host="0.0.0.0", port=8000, debug=True)` by<br>
+`app.run()`.
+
+7. In `database.py`, replace line 9<br>
+`engine = create_engine("sqlite:///catalog.db")` by<br>
+`engine = create_engine('postgresql://catalog:PASSWORD@localhost/catalog')`. 
+
+<!--
 $ sudo chown -R www-data:www-data /var/www/catalogApp/
 Concernant la précédente instruction, voir ... faudra chercher davantage pour savoir pourquoi.
-En plus, si je fais cela ici, ne pas faire plus bas...
-https://github.com/boisalai/fullstack-nanodegree-linux-server-config
-https://github.com/boisalai/linux-server-configuration
-$ sudo git clone https://github.com/boisalai/udacity-catalog-app.git catalogApp
+-->
 
-Change the ownership of the 'catalogApp' directory to ubuntu by running (while in /var/www):
-$ sudo chown -R ubuntu:ubuntu catalogApp/
+#### Authenticate login through Google
 
-Change to the /var/www/catalogApp directory
+Create a new project on the Google API Console.
 
-Change the name of the application.py file to __init__.py by running mv application.py __init__.py
-$ mv application.py __init__.py
-$ sudo nano __init__.py
+8. Go to https://console.cloud.google.com/ of Google Cloud Plateform.
 
-In __init__.py, find line x:
-app.run(host='0.0.0.0', port=8000)
-Change this line to:
-app.run()
+9. Click `APIs & services` on left menu.
 
-Switch the database in the application from SQLite to PostgreSQL
-Replace line 9 in database.py with the following:
-$ sudo nano database.py
+10. Click `Credentials`.
 
-engine = create_engine('postgresql://catalog:INSERT_PASSWORD_FOR_DATABASE_HERE@localhost/catalog')
-engine = create_engine('postgresql://catalog:catalog@localhost/catalog')
+11. Create an OAuth Client ID (under the Credentials tab), and make sure to add http://XX.XX.XX.XX and 
+http://ec2-XX-XX-XX-XX.compute-1.amazonaws.com as authorized JavaScript 
+origins.
 
-Add client_secrets.json and fb_client_secrets.json files
+12. Add http://ec2-XX-XX-XX-XX.compute-1.amazonaws.com/login, 
+http://ec2-XX-XX-XX-XX.compute-1.amazonaws.com/gconnect, 
+and http://ec2-XX-XX-XX-XX.compute-1.amazonaws.com/oauth2callback 
+as authorized redirect URIs.
 
-.....
-2017-10-17
-5. Deploying to Linux Servers
-Project: Linux Server Configuration
-
-Je continue...
-
-(21)
-Create a new project on the Google API Console
-Goto
-https://console.cloud.google.com/home/dashboard?project=api-project-534192602257
-Click on APIs & services, puis sur Credentials
-
-Create an OAuth Client ID (under the Credentials tab), and make sure to add http://13.59.171.132 and 
-http://ec2-13.59.171.132.compute-1.amazonaws.com as authorized JavaScript origins
-
-Add http://ec2-13.59.171.132.compute-1.amazonaws.com/login, 
-http://ec2-13.59.171.132.compute-1.amazonaws.com/gconnect, 
-and http://ec2-13.59.171.132.compute-1.amazonaws.com/oauth2callback 
-as authorized redirect URIs
-
-J'obtiens...
-
+<!--
 OAuth client
 Here is your client ID:
-534192602257-bgho9e8qcasnt2inktff0apocg6lga1c.apps.googleusercontent.com
+534192602257-j2ednqkkgkc373ivi0e95pj9msbq9207.apps.googleusercontent.com
 Here is your client secret:
-clOZt6W_WjVk3812EmHZ_sNt
+ipqoZMk97Wh5VGbZkIY6gPGl
+-->
 
-Télécharger le fichier client_secret*.json
-L'ouvrir et copier le contenu.
+13. Download the corresponding JSON file, open it et copy the contents.
 
-Ouvrir le fichier "client_secret.json"
-ubuntu@ip-172-26-1-254:/var/www/catalogApp$ sudo nano client_secret.json
-Copier le contenu à l'intérieur.
+14. Open `/var/www/catalog/catalog/client_secret.json` and paste the previous contents into the this file.
 
-(22)
+15. Replace the client ID to line 25 of the `templates/login.html` file in the project directory.
+
+#### Authenticate login through Facebook
+
 Create a new app at Facebook for Developers
-Goto
-https://developers.facebook.com/
-Cliquer sur "My Apps" puis sur "Add a New App"
-Cliquer sur "Add the 'Facebook Login'"
 
-Add the 'Facebook Login' product, and put http://13.59.171.132/ and 
-http://ec2-13-59-171-132.compute-1.amazonaws.com/ as the Valid OAuth redirect URIs
+16. Go to https://developers.facebook.com/.
 
-Facebook me retourne du code...
+17. Click `My Apps` and click `Add a New App`. 
+
+18. Enter as `Display Name` then name `catalog`, enter your email and click 
+`Create App ID`.
+
+19. Click `Set Up` button of the `Facebook Login` card.
+
+20. Choose Web Plateform.
+
+21. Enter `http://XX.XX.XX.XX/` as site URL and ckick `Save` button.
+
+22. Click `Settings` under `Facebook Login`, and put `http://XX.XX.XX.XX/` and 
+`http://ec2-XX-XX-XX-XX.compute-1.amazonaws.com/` as the Valid OAuth redirect URIs, and click `Save Changes` button.
+
+<!--
+52.14.148.42
+http://52.14.148.42/
+http://ec2-52-14-148-42.compute-1.amazonaws.com/
+-->
+
+23. Click `Dashboard` on left menu. You should see `API Version` and `App ID` for the `catalog` application.
+
+23. Replace the `appId` and `version`, respectively on lines 74 and 78 of the `templates/login.html`, with the correspoding `App ID` and `API Version`.
+
+#### Set up a vitual environment 
+
+24. Install pip with the following command: `sudo apt-get install python-pip`.
+
+25. Install the virtual environment by running: `sudo apt-get install python-virtualenv`.
+
+26. Change to the `/var/www/catalog/catalog/` directory.
+
+27. Create the virtual environment by running: `virtualenv venv`.
+
+28. Activate the new environment by running `. venv/bin/activate`.
+
+#### Install dependencies
+
+29. With the virtual environment active, install the following dependenies (note: with the exception of the libpq-dev package, make sure to not use sudo for any of the package installations as this will cause the packages to be installed globally rather than within the virtualenv):
+
+`pip install httplib2`
+
+`pip install requests`
+
+`pip install --upgrade oauth2client`
+
+`pip install sqlalchemy`
+
+`pip install flask`
+
+`sudo apt-get install libpq-dev` (Note: this will install to the global evironment)
+
+`pip install psycopg2`
+
+30. In order to make sure everything was installed correctly, run `python __init__.py`. The following (among other things) should be returned:
 
 ```
-<script>
-  window.fbAsyncInit = function() {
-    FB.init({
-      appId      : '1979089279036389',
-      xfbml      : true,
-      version    : 'v2.10'
-    });
-    FB.AppEvents.logPageView();
-  };
-
-  (function(d, s, id){
-     var js, fjs = d.getElementsByTagName(s)[0];
-     if (d.getElementById(id)) {return;}
-     js = d.createElement(s); js.id = id;
-     js.src = "//connect.facebook.net/en_US/sdk.js";
-     fjs.parentNode.insertBefore(js, fjs);
-   }(document, 'script', 'facebook-jssdk'));
-</script>
-```
-
-Ne pas oublier mon mot de passe dans Facebook Developer qui est alpha111
-Secret key is... f61e0c9b48ab62f09392d20419cc312b
-Mais où dois-je mettre ma clé secrète?
-
-Disons que je vais seulement changer appId et version
-
-Ouvrir le fichier login.html
-ubuntu@ip-172-26-1-254:/var/www/catalogApp/catalogApp/templates$ sudo nano login.html
-Remplacer le champ "data-clientid=" par la clé "Client ID" de Google.
-Remplacer le champ "appId=" de Facebook par '1979089279036389'
-Remplacer le champ "version=" de Facebook par 'v2.10'
-
-(23)
-Set up a vitual environment and install dependencies
-$ sudo apt-get install python-pip
-
-/*
-Finalement, je n'ai pas utilisé d'environnement virtuel.
-Donc ne pas faire...
-Cependant, voir ceci http://sageelliott.com/post/post2-AWS-Flask_setup/
-
-$ sudo apt-get install python-virtualenv
-
-Exécuter la commande 'virtualenv venv' dans le bon répertoire...
-ubuntu@ip-172-26-1-254:/var/www/catalogApp/catalogApp$ virtualenv venv
-Running virtualenv with interpreter /usr/bin/python2
-New python executable in /var/www/catalogApp/catalogApp/venv/bin/python2
-Also creating executable in /var/www/catalogApp/catalogApp/venv/bin/python
-Installing setuptools, pkg_resources, pip, wheel...done.
-*/
-
-$ sudo pip install httplib2
-$ sudo pip install requests
-$ sudo pip install --upgrade oauth2client
-$ sudo pip install flask
-$ sudo pip install sqlalchemy
-$ sudo pip install psycopg2
-
-Je ne sais pas s'il m'en manque.
-sudo apt-get install libpq-dev (Note: this will install to the global evironment)
-pip install psycopg2 ??
-
-In order to make sure everything was installed correctly, run python __init__.py; the following (among other things) 
-should be returned:
 * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+```
 
+31. Deactivate the virtual environment by running `deactivate`.
 
-(24)
-Set up and enable a virtual host
-Create a file in /etc/apache2/sites-available/ called catalogApp.conf 
-Je serai obligé de créer le répertoire $ mkdir sites-available
-ubuntu@ip-172-26-1-254:/etc/apache2/sites-available$ sudo nano catalogApp.conf 
+#### Set up and enable a virtual host
 
-Add the following into the file:
+32. Create a file in `/etc/apache2/sites-available/` called `catalog.conf`.
 
+33. Add the following into the file:
+
+```
 <VirtualHost *:80>
-		ServerName 13.59.171.132
+		ServerName XX.XX.XX.XX
 		ServerAdmin ay.boisvert@gmail.com
-		WSGIScriptAlias / /var/www/catalogApp/catalogApp.wsgi
-		<Directory /var/www/catalogApp/catalogApp/>
+		WSGIScriptAlias / /var/www/catalog/catalog.wsgi
+		<Directory /var/www/catalog/catalog/>
 			Order allow,deny
 			Allow from all
 			Options -Indexes
 		</Directory>
-		Alias /static /var/www/catalogApp/catalogApp/static
-		<Directory /var/www/catalogApp/catalogApp/static/>
+		Alias /static /var/www/catalog/catalog/static
+		<Directory /var/www/catalog/catalog/static/>
 			Order allow,deny
 			Allow from all
 			Options -Indexes
@@ -504,69 +467,110 @@ Add the following into the file:
 		LogLevel warn
 		CustomLog ${APACHE_LOG_DIR}/access.log combined
 </VirtualHost>
+```
 
-Run sudo a2ensite catalogApp to enable the virtual host
-$ sudo a2ensite catalogApp
+<!--
+52.14.148.42
+-->
 
-The following prompt will be returned:
-Enabling site catalogApp.
+Note: the `Options -Indexes` lines ensure that listings for these directories in the browser is disabled.
+
+34. Run `sudo a2ensite catalog` to enable the virtual host. The following prompt will be returned:
+```
+Enabling site catalog.
 To activate the new configuration, you need to run:
   service apache2 reload
-  
-Reloader
-$ sudo service apache2 reload
+```
 
-(25)
-Write a .wsgi file
+35. Reload Apache by running: `sudo service apache2 reload`.
 
-Regarder ce qui est écrit ici...
-http://sageelliott.com/post/post2-AWS-Flask_setup/
+#### Write the catalog.wsgi file 
 
-Create the wsgi file
-cd /var/www/catalogApp
-sudo nano catalogApp.wsgi
+Apache serves Flask applications by using a .wsgi file.
 
-activate_this = '/var/www/catalogApp/catalogApp/venv/bin/activate_this.py'
-execfile(activate_this, dict(__file__=activate_this))
+36. Create a file called `catalog.wsgi` in `/var/www/catalog` directory.
+
+37. Add the following to the file:
 
 ```
+activate_this = '/var/www/catalog/catalog/venv/bin/activate_this.py'
+execfile(activate_this, dict(__file__=activate_this))
+
 #!/usr/bin/python
 import sys
 import logging
 logging.basicConfig(stream=sys.stderr)
-sys.path.insert(0,"/var/www/catalogApp/")
+sys.path.insert(0, "/var/www/catalog/")
 
 from nuevoMexico import app as application
-application.secret_key = '12345'
+application.secret_key = "12345"
 ```
-Resart Apache: 
-$ sudo service apache2 restart
 
+38. Restart Apache by running: `sudo service apache2 restart`.
 
+#### Disable the default Apache site
 
+39. At some point during the configuration, the default Apache site will likely need to be disabled; to do this, run `sudo a2dissite 000-default.conf`. The following prompt will be returned:
 
-J'obtiens un message d'erreur.
-Je remplace "description=lig.random_para(250)," par "description=lig.random_para(240)," à 4 endroits.
+```
+Site 000-default disabled.
+To activate the new configuration, you need to run:
+  service apache2 reload
+```
 
-Je suis obligé d'ajouter des lignes à data.py pour détruire les occurances déjà inséré dans la table.
- https://stackoverflow.com/questions/16573802/flask-sqlalchemy-how-to-delete-all-rows-in-a-single-table
+40. Reload Apache by running: `sudo service apache2 reload`.
 
-Voici les lignes que j'ajoute...
-$ sudo nano data.py
+#### Change the ownership of the project directories
 
-Create database.
-create_db()
+41. Change the ownership of the project directories and files to the `www-data` user (this is done because Apache runs as the `www-data` user); while in the `/var/www` directory, run: `sudo chown -R www-data:www-data catalog/`.
 
-Delete all rows.
+#### Set up the database schema and populate the database
+
+42. While in the `/var/www/catalog/catalog/` directory, activate the virtual environment by running `. venv/bin/activate`.
+
+43. Then run `python data.py`.
+
+#### Correct problems
+
+We get the following error message:
+
+```
+sqlalchemy.exc.DataError: (psycopg2.DataError) value too long for type character varying(250)
+```
+
+To correct this problem, you need to modify the `data.py` file slightly:
+- replace `lig.random_para(250)` by `lig.random_para(240)` on lines 86, 143, 191, 234 and 280.
+- add the following instructions after line 16:<br>
+```
+# Delete all rows.
 session.query(Item).delete()
 session.query(Category).delete()
 session.query(User).delete()
+```
+
+https://stackoverflow.com/questions/6357361/alternative-to-execfile-in-python-3
+
+
+44. Then run again `python data.py`.
+
+45. Deactivate the virtualenv (run `deactivate`).
+
+46. Resart Apache again: `sudo service apache2 restart`.
+
+47. Now open up a browser and check to make sure the app is working by going to http://XX.XX.XX.XX or http://ec2-XX-XX-XX-XX.compute-1.amazonaws.com
+
+<!--
+http://52.14.148.42/
+http://ec2-52-14-148-42.compute-1.amazonaws.com/
+-->
+
+<!--
+J'obtiens un erreur "500 Internal Server Error"
+sudo tail /var/log/apache2/error.log
+-->
 
 
 
-### 14. Set it up in the server so that it functions correctly when visiting your server’s IP address in a browser. 
-
-Make sure that your .git directory is not publicly accessible via a browser!
 
 ## Sources
 
@@ -577,3 +581,5 @@ Digital Ocean tutorial: [How To Add and Delete Users on an Ubuntu 14.04 VPS](htt
 GitHub Repository: [bencam/linux-server-configuration](https://github.com/bencam/linux-server-configuration)
 
 GitHub Repository: [adityamehra/udacity-linux-server-configuration](https://github.com/adityamehra/udacity-linux-server-configuration)
+
+http://sageelliott.com/post/post2-AWS-Flask_setup/
