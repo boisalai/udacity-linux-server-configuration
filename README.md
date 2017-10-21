@@ -403,21 +403,23 @@ http://ec2-52-14-148-42.compute-1.amazonaws.com/
 
 23. Replace the `appId` and `version`, respectively on lines 74 and 78 of the `templates/login.html`, with the correspoding `App ID` and `API Version`.
 
-#### Set up a vitual environment 
+### 14. Set it up in your server so that it functions correctly when visiting your server’s IP address in a browser. 
 
-24. Install pip with the following command: `sudo apt-get install python-pip`.
+#### Set up a virtual environment 
 
-25. Install the virtual environment by running: `sudo apt-get install python-virtualenv`.
+1. Install pip with the following command: `sudo apt-get install python-pip`.
 
-26. Change to the `/var/www/catalog/catalog/` directory.
+2. Install the virtual environment by running: `sudo apt-get install python-virtualenv`.
 
-27. Create the virtual environment by running: `virtualenv venv`.
+3. Change to the `/var/www/catalog/catalog/` directory.
 
-28. Activate the new environment by running `. venv/bin/activate`.
+4. Create the virtual environment by running: `virtualenv venv`.
+
+5. Activate the new environment by running `. venv/bin/activate`.
 
 #### Install dependencies
 
-29. With the virtual environment active, install the following dependenies (note: with the exception of the libpq-dev package, make sure to not use sudo for any of the package installations as this will cause the packages to be installed globally rather than within the virtualenv):
+6. With the virtual environment active, install the following dependenies (note: with the exception of the libpq-dev package, make sure to not use sudo for any of the package installations as this will cause the packages to be installed globally rather than within the virtualenv):
 
 `pip install httplib2`
 
@@ -433,19 +435,19 @@ http://ec2-52-14-148-42.compute-1.amazonaws.com/
 
 `pip install psycopg2`
 
-30. In order to make sure everything was installed correctly, run `python __init__.py`. The following (among other things) should be returned:
+7. In order to make sure everything was installed correctly, run `python __init__.py`. The following (among other things) should be returned:
 
 ```
 * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
 ```
 
-31. Deactivate the virtual environment by running `deactivate`.
+8. Deactivate the virtual environment by running `deactivate`.
 
 #### Set up and enable a virtual host
 
-32. Create a file in `/etc/apache2/sites-available/` called `catalog.conf`.
+9. Create a file in `/etc/apache2/sites-available/` called `catalog.conf`.
 
-33. Add the following into the file:
+10. Add the following into the file:
 
 ```
 <VirtualHost *:80>
@@ -475,22 +477,22 @@ http://ec2-52-14-148-42.compute-1.amazonaws.com/
 
 Note: the `Options -Indexes` lines ensure that listings for these directories in the browser is disabled.
 
-34. Run `sudo a2ensite catalog` to enable the virtual host. The following prompt will be returned:
+11. Run `sudo a2ensite catalog` to enable the virtual host. The following prompt will be returned:
 ```
 Enabling site catalog.
 To activate the new configuration, you need to run:
   service apache2 reload
 ```
 
-35. Reload Apache by running: `sudo service apache2 reload`.
+12. Reload Apache by running: `sudo service apache2 reload`.
 
 #### Write the catalog.wsgi file 
 
 Apache serves Flask applications by using a .wsgi file.
 
-36. Create a file called `catalog.wsgi` in `/var/www/catalog` directory.
+13. Create a file called `catalog.wsgi` in `/var/www/catalog` directory.
 
-37. Add the following to the file:
+14. Add the following to the file:
 
 ```
 activate_this = '/var/www/catalog/catalog/venv/bin/activate_this.py'
@@ -506,11 +508,11 @@ from nuevoMexico import app as application
 application.secret_key = "12345"
 ```
 
-38. Restart Apache by running: `sudo service apache2 restart`.
+15. Restart Apache by running: `sudo service apache2 restart`.
 
 #### Disable the default Apache site
 
-39. At some point during the configuration, the default Apache site will likely need to be disabled; to do this, run `sudo a2dissite 000-default.conf`. The following prompt will be returned:
+16. At some point during the configuration, the default Apache site will likely need to be disabled; to do this, run `sudo a2dissite 000-default.conf`. The following prompt will be returned:
 
 ```
 Site 000-default disabled.
@@ -518,17 +520,17 @@ To activate the new configuration, you need to run:
   service apache2 reload
 ```
 
-40. Reload Apache by running: `sudo service apache2 reload`.
+17. Reload Apache by running: `sudo service apache2 reload`.
 
 #### Change the ownership of the project directories
 
-41. Change the ownership of the project directories and files to the `www-data` user (this is done because Apache runs as the `www-data` user); while in the `/var/www` directory, run: `sudo chown -R www-data:www-data catalog/`.
+18. Change the ownership of the project directories and files to the `www-data` user (this is done because Apache runs as the `www-data` user); while in the `/var/www` directory, run: `sudo chown -R www-data:www-data catalog/`.
 
 #### Set up the database schema and populate the database
 
-42. While in the `/var/www/catalog/catalog/` directory, activate the virtual environment by running `. venv/bin/activate`.
+19. While in the `/var/www/catalog/catalog/` directory, activate the virtual environment by running `. venv/bin/activate`.
 
-43. Then run `python data.py`.
+20. Then run `python data.py`.
 
 #### Correct problems
 
@@ -551,13 +553,13 @@ session.query(User).delete()
 https://stackoverflow.com/questions/6357361/alternative-to-execfile-in-python-3
 
 
-44. Then run again `python data.py`.
+21. Then run again `python data.py`.
 
-45. Deactivate the virtualenv (run `deactivate`).
+22. Deactivate the virtualenv (run `deactivate`).
 
-46. Resart Apache again: `sudo service apache2 restart`.
+23. Resart Apache again: `sudo service apache2 restart`.
 
-47. Now open up a browser and check to make sure the app is working by going to http://XX.XX.XX.XX or http://ec2-XX-XX-XX-XX.compute-1.amazonaws.com
+24. Now open up a browser and check to make sure the app is working by going to http://XX.XX.XX.XX or http://ec2-XX-XX-XX-XX.compute-1.amazonaws.com
 
 <!--
 http://52.14.148.42/
