@@ -1,587 +1,622 @@
 # Linux Server Configuration
 
-This is the final project for "Full Stack Web Developer Nanodegree" on Udacity. 
+This is the final project for Udacity's [Full Stack Web Developer Nanodegree](https://www.udacity.com/course/full-stack-web-developer-nanodegree--nd004). 
 
-In this project, a Linux virtual machine needs to be configurated to support the Item Catalog website.
+This page explains how to secure and set up a Linux distribution on a virtual machine, install and configure a web and database server to host a web application. 
+- The Linux distribution is [Ubuntu](https://www.ubuntu.com/download/server) 16.04 LTS.
+- The virtual private server is [Amazon Lighsail](https://lightsail.aws.amazon.com/).
+- The web application is my [Item Catalog project](https://github.com/boisalai/udacity-catalog-app) created earlier in this Nanodegree program.
+- The database server is [PostgreSQL](https://www.postgresql.org/).
+- My local machine is a MacBook Pro.
 
-You can visit http://35.164.53.24/ for the website deployed.
+You can visit http://13.59.39.163/ or http://ec2-13-59-39-163.us-east-2.compute.amazonaws.com for the website deployed.
 
 ## Get a server
 
-### 1. Start a new Ubuntu Linux server instance on Amazon Lightsail 
+### Step 1: Start a new Ubuntu Linux server instance on Amazon Lightsail 
 
-The following steps will create a LightSail Instance for Ubuntu.
+- Login into [Amazon Lightsail](https://lightsail.aws.amazon.com/ls/webapp/home/resources) using an Amazon Web Services account.
+- Once you are login into the site, click `Create instance`. 
+- Choose `Linux/Unix` platform, `OS Only` and  `Ubuntu 16.04 LTS`.
+- Choose a instance plan (I took the cheapest, $5/month).
+- Keep the default name provided by AWS or rename your instance.
+- Click the `Create` button to create the instance.
+- Wait for the instance to start up.
 
-1. Login into [AWS Light Sail](https://lightsail.aws.amazon.com/ls/webapp/home/resources) using an Amazon Web Services account
+**Reference**
+- ServerPilot, [How to Create a Server on Amazon Lightsail](https://serverpilot.io/community/articles/how-to-create-a-server-on-amazon-lightsail.html)
 
-2. Once you are login into the site, click **Create instance**. 
 
-3. Choose **Linux/Unix** platform, **OS Only** and  **Ubuntu 16.04 LTS**.
+### Step 2: SSH into the server
 
-<img src="images/screen1.png" width="600px">
+- From the `Account` menu on Amazon Lightsail, click on `SSH keys` tab and download the Default Private Key.
+- Move this private key file named `LightsailDefaultPrivateKey-*.pem` into the local folder `~/.ssh` and rename it `lightsail_key.rsa`.
+- In your terminal, type: `chmod 600 ~/.ssh/lightsail_key.rsa`.
+- To connect to the instance via the terminal: `ssh -i ~/.ssh/lightsail_key.rsa ubuntu@13.59.39.163`, 
+  where `13.59.39.163` is the public IP address of the instance.
 
-4. Choose a instance plan.
-
-<img src="images/screen2.png" width="600px">
-
-5. You can name your instance or just leave the default name provided by AWS.
-
-<img src="images/screen3.png" width="600px">
-
-6. Click **Create**.
-
-7. Wait for the instance to start up.
-
-### 2. SSH into the server
-
-The following steps outline how to connect to the instance via the Terminal program on Mac OS machines.
-
-1. Download Default Private Key from the **SSH keys** section in the **Account** section on Amazon Lightsail.
-
-2. Move this private key file into the local folder `~/.ssh` and rename it `lightsail_key.rsa`.
-
-3. In your terminal, type in `chmod 600 ~/.ssh/lightsail_key.rsa`.
-
-4. In your terminal, type in `ssh -i ~/.ssh/lightsail_key.rsa ubunut@XX.XX.XX.XX`, where `XX.XX.XX.XX` is the public IP address of the instance.
+<!--
+Public IP address is 13.59.39.163.
+ssh -i ~/.ssh/lightsail_key.rsa ubuntu@13.59.39.163
+-->
 
 ## Secure the server
 
-### 3. Update all currently installed packages
-
-1. Notify the system of what package updates are available by 
-running `sudo apt-get update`.
-
-2. Download available package updates by running `sudo apt-get upgrade`.
-
-### 4. Change the SSH port from 22 to 2200
-
-1. Edit the file `/etc/ssh/sshd_config` with the command `sudo nano /etc/ssh/sshd_config`.
-
-2. Change the port number on line 5 from 22 to 2200, save and quit.
-
-3. Restart SSH by running `sudo service ssh restart`.
-
-### 5. Configure the Uncomplicated Firewall (UFW)
-
-Configure the Uncomplicated Firewall (UFW) to only allow incoming connections for SSH (port 2200), HTTP (port 80), and NTP (port 123).
-
-1. The UFW should be inactive. Check it by running `sudo ufw status`.
-
-2. By default, block all incoming connections on all ports: `sudo ufw default deny incoming`.
-
-3. Allow outgoing connection on all ports: `sudo ufw default allow outgoing`.
-
-4. Allow incoming connection for SSH on port 2200: `sudo ufw allow 2200/tcp`.
-
-5. Allow incoming connections for HTTP on port 80: `sudo ufw allow www`.
-
-6. Allow incoming connection for NTP on port 123: `sudo ufw allow 123/udp`.
-
-7. Since the virtual machine has now been configured so that SSH uses port 2200, port 22 is not being used for anything. So, deny port 22: `sudo ufw deny 22`.
-
-8. enable the ufw firewall: `sudo ufw enable`.
-
-9. Check which ports are open: `sudo ufw status`. You should see like this:
+### Step 3: Update and upgrade installed packages
 
 ```
-Status: active
-
-To                         Action      From
---                         ------      ----
-2200/tcp                   ALLOW       Anywhere                  
-80/tcp                     ALLOW       Anywhere                  
-123/udp                    ALLOW       Anywhere                  
-22                         DENY        Anywhere                  
-2200/tcp (v6)              ALLOW       Anywhere (v6)             
-80/tcp (v6)                ALLOW       Anywhere (v6)             
-123/udp (v6)               ALLOW       Anywhere (v6)             
-22 (v6)                    DENY        Anywhere (v6)
+sudo apt-get update
+sudo apt-get upgrade
 ```
 
-10. Now, click on the **Manage** option of the Amazon Lightsail Instance, 
-then the **Networking** tab, and then change the firewall configuration to match the internal firewall settings above (only ports 80(TCP), 123(UDP), and 2200(TCP) should be allowed). Make sure to deny the default port 22.
 
+### Step 4: Change the SSH port from 22 to 2200
+
+- Edit the `/etc/ssh/sshd_config` file: `sudo nano /etc/ssh/sshd_config`.
+- Change the port number on line 5 from `22` to `2200`.
+- Save and exit using CTRL+X and confirm with Y.
+- Restart SSH: `sudo service ssh restart`.
+
+### Step 5: Configure the Uncomplicated Firewall (UFW)
+
+- Configure the default firewall for Ubuntu to only allow incoming connections for SSH (port 2200), HTTP (port 80), and NTP (port 123).
+  ```
+  sudo ufw status                  # The UFW should be inactive.
+  sudo ufw default deny incoming   # Deny any incoming traffic.
+  sudo ufw default allow outgoing  # Enable outgoing traffic.
+  sudo ufw allow 2200/tcp          # Allow incoming tcp packets on port 2200.
+  sudo ufw allow www               # Allow HTTP traffic in.
+  sudo ufw allow 123/udp           # Allow incoming udp packets on port 123.
+  sudo ufw deny 22                 # Deny tcp and udp packets on port 53.
+  ```
+
+- Turn UFW on: `sudo ufw enable`. The output should be like this:
+  ```
+  Command may disrupt existing ssh connections. Proceed with operation (y|n)? y
+  Firewall is active and enabled on system startup
+  ```
+
+- Check the status of UFW to list current roles: `sudo ufw status`. The output should be like this:
+
+  ```
+  Status: active
+  
+  To                         Action      From
+  --                         ------      ----
+  2200/tcp                   ALLOW       Anywhere                  
+  80/tcp                     ALLOW       Anywhere                  
+  123/udp                    ALLOW       Anywhere                  
+  22                         DENY        Anywhere                  
+  2200/tcp (v6)              ALLOW       Anywhere (v6)             
+  80/tcp (v6)                ALLOW       Anywhere (v6)             
+  123/udp (v6)               ALLOW       Anywhere (v6)             
+  22 (v6)                    DENY        Anywhere (v6)
+  ```
+
+- Exit the SSH connection: `exit`.
+
+- Click on the `Manage` option of the Amazon Lightsail Instance, 
+then the `Networking` tab, and then change the firewall configuration to match the internal firewall settings above.
 <img src="images/screen4.png" width="600px">
+
+- Allow ports 80(TCP), 123(UDP), and 2200(TCP), and deny the default port 22.
 <img src="images/screen5.png" width="600px">
+
+- From your local terminal, run: `ssh -i ~/.ssh/lightsail_key.rsa -p 2200 ubuntu@13.59.39.163`, where `13.59.39.163` is the public IP address of the instance.
+
+<!--
+Public IP address is 13.59.39.163.
+ssh -i ~/.ssh/lightsail_key.rsa -p 2200 ubuntu@13.59.39.163
+-->
+
+**References**
+- Official Ubuntu Documentation, [UFW - Uncomplicated Firewall](https://help.ubuntu.com/community/UFW)
+- TechRepublic, [How to install and use Uncomplicated Firewall in Ubuntu](https://www.techrepublic.com/article/how-to-install-and-use-uncomplicated-firewall-in-ubuntu/)
+
 
 ## Give grader access
 
-### 6. Create a new user account named grader
 
-1. Add user: `sudo adduser grader`. 
+### Step 6: Create a new user account named `grader`
 
-2. Enter a password (twice) and fill out information for this new user.
+- While logged in as `ubuntu`, add user: `sudo adduser grader`. 
+- Enter a password (twice) and fill out information for this new user.
 
-### 7. Give grader the permission to sudo
 
-1. Edits the sudoers file: `sudo visudo`.
+### Step 7: Give `grader` the permission to sudo
 
-2. Search for the line that looks like this:
-```
-root    ALL=(ALL:ALL) ALL
-```
+- Edits the sudoers file: `sudo visudo`.
+- Search for the line that looks like this:
+  ```
+  root    ALL=(ALL:ALL) ALL
+  ```
 
-3. Below this line, add a new line to give sudo privileges to **grader** user like this:
-```
-root    ALL=(ALL:ALL) ALL
-grader  ALL=(ALL:ALL) ALL
-```
+- Below this line, add a new line to give sudo privileges to `grader` user.
+  ```
+  root    ALL=(ALL:ALL) ALL
+  grader  ALL=(ALL:ALL) ALL
+  ```
 
-4. Save and close the file by hitting **Ctrl-X**, followed by **Y**, and then hit **Enter** to confirm.
+- Save and exit using CTRL+X and confirm with Y.
+- Verify that `grader` has sudo permissions. Run `su - grader`, enter the password, 
+run `sudo -l` and enter the password again. The output should be like this:
 
-5. Verify that **grader** has sudo permissions. Run `su - grader`, enter the password, run `sudo -l` and enter the password again. You should see like this:
+  ```
+  Matching Defaults entries for grader on ip-172-26-13-170.us-east-2.compute.internal:
+      env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
+  
+  User grader may run the following commands on ip-172-26-13-170.us-east-2.compute.internal:
+      (ALL : ALL) ALL
+  ```
 
-```
-Matching Defaults entries for grader on ip-172-26-13-170.us-east-2.compute.internal:
-    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
+**Resources**
+- DigitalOcean, [How To Add and Delete Users on an Ubuntu 14.04 VPS](https://www.digitalocean.com/community/tutorials/how-to-add-and-delete-users-on-an-ubuntu-14-04-vps)
 
-User grader may run the following commands on ip-172-26-13-170.us-east-2.compute.internal:
-    (ALL : ALL) ALL
-```
 
-### 8. Create an SSH key pair for grader using the `ssh-keygen` tool
+### Step 8: Create an SSH key pair for grader using the `ssh-keygen` tool
 
-1. Run `ssh-keygen` on the local machine.
-
-2. Enter file in which to save the key (for this example, I give the name `grader_key`) in the local directory `~/.ssh`.
-
-3. Enter in a passphrase twice. Two files will be generated (for this example,  `~/.ssh/grader_key` and `~/.ssh/grader_key.pub`).
-
-4. Log in to the grader's virtual machine.
-
-5. Create a new directory called `~/.ssh` (`mkdir .ssh` from grader's home directory).
-
-6. Run `touch .ssh/authorized_keys`.
-
-7. On the local machine, run `cat ~/.ssh/grader_key.pub` and copy 
-the contents of the file.
-
-8. On the grader's virtual machine, run `sudo nano ~/.ssh/authorized_keys` and paste the content into this file, save and close.
-
-9. On the grader's virtual machine, run `chmod 700 .ssh`. 
-
-10. On the grader's virtual machine, run `chmod 644 .ssh/authorized_keys`. 
-
-11. On the grader's virtual machine, make sure key-based authentication is forced. Check in `/etc/ssh/sshd_config` file if **PasswordAuthentication** is set to **no** like this:
-
-```
-# Change to no to disable tunnelled clear text passwords
-PasswordAuthentication no
-```
-
-12. On the grader's virtual machine, run `sudo service ssh restart`.
-
-13. On the local machine, log in as the grader using the following command: `ssh -i ~/.ssh/grader_key -p 2200 grader@XX.XX.XX.XX`.
+- On the local machine:
+  - Run `ssh-keygen`
+  - Enter file in which to save the key (I gave the name `grader_key`) in the local directory `~/.ssh`
+  - Enter in a passphrase twice. Two files will be generated (  `~/.ssh/grader_key` and `~/.ssh/grader_key.pub`)
+  - Run `cat ~/.ssh/grader_key.pub` and copy the contents of the file
+  - Log in to the grader's virtual machine
+- On the grader's virtual machine:
+  - Create a new directory called `~/.ssh` (`mkdir .ssh`)
+  - Run `sudo nano ~/.ssh/authorized_keys` and paste the content into this file, save and exit
+  - Give the permissions: `chmod 700 .ssh` and `chmod 644 .ssh/authorized_keys`
+  - Check in `/etc/ssh/sshd_config` file if `PasswordAuthentication` is set to `no`
+  - Restart SSH: `sudo service ssh restart`
+- On the local machine, run: `ssh -i ~/.ssh/grader_key -p 2200 grader@13.59.39.163`.
 
 <!--
-ssh -i ~/.ssh/grader_key -p 2200 grader@52.14.148.42
+Public IP address is 13.59.39.163.
+ssh -i ~/.ssh/grader_key -p 2200 grader@13.59.39.163
 le paraphrase est grader
 -->
 
 ## Prepare to deploy the project
 
-### 9. Configure the local timezone to UTC
+### Step 9: Configure the local timezone to UTC
 
-Configure the time zone: `sudo dpkg-reconfigure tzdata`. You should see something like that:
+- While logged in as `grader`, configure the time zone: `sudo dpkg-reconfigure tzdata`. You should see something like that:
 
-```
-Current default time zone: 'America/Montreal'
-Local time is now:      Thu Oct 19 21:55:16 EDT 2017.
-Universal Time is now:  Fri Oct 20 01:55:16 UTC 2017.
-```
+  ```
+  Current default time zone: 'America/Montreal'
+  Local time is now:      Thu Oct 19 21:55:16 EDT 2017.
+  Universal Time is now:  Fri Oct 20 01:55:16 UTC 2017.
+  ```
 
-### 10. Install and configure Apache to serve a Python mod_wsgi application
+**References**
+- Ubuntu Official Documentation, [UbuntuTime](https://help.ubuntu.com/community/UbuntuTime)
+- [How do I change my timezone to UTC/GMT?](https://askubuntu.com/questions/138423/how-do-i-change-my-timezone-to-utc-gmt/138442)
 
-1. Run `sudo apt-get install apache2` to install Apache.
 
-2. Check to make sure Apache is working by using the public IP of the Amazon Lightsail instance as a URL in a browser. If yes, a page with the title **Apache2 Ubuntu Default Page** should load.
 
+### Step 10: Install and configure Apache to serve a Python mod_wsgi application
+
+- While logged in as `grader`, install Apache: `sudo apt-get install apache2`.
+- Enter public IP of the Amazon Lightsail instance into browser. If Apache is working, you should see:
 <img src="images/screen6.png" width="600px">
 
-3. Install the mod_wsgi package: `sudo apt-get install libapache2-mod-wsgi python-dev`.<br>
-If you built your project with Python 3, you will need to install the Python 3 mod_wsgi package on your server: `sudo apt-get install libapache2-mod-wsgi-py3`.
+- My project is built with Python 3. So, I
+need to install the Python 3 mod_wsgi package:  
+ `sudo apt-get install libapache2-mod-wsgi-py3`.
+- Enable `mod_wsgi` using: `sudo a2enmod wsgi`.
 
-4. Make sure mod_wsgi is enabled by running `sudo a2enmod wsgi`.
 
-### 11. Install and configure PostgreSQL
+### Step 11: Install and configure PostgreSQL
 
-#### Install PostgreSQL
+- While logged in as `grader`, install PostgreSQL:
+ `sudo apt-get install postgresql`.
+- PostgreSQL should not allow remote connections. In the  `/etc/postgresql/9.5/main/pg_hba.conf` file, you should see:
+  ```
+  local   all             postgres                                peer
+  local   all             all                                     peer
+  host    all             all             127.0.0.1/32            md5
+  host    all             all             ::1/128                 md5
+  ```
 
-1. Install PostgreSQL by running `sudo apt-get install postgresql`.
+- Switch to the `postgres` user: `sudo su - postgres`.
+- Open PostgreSQL interactive terminal with `psql`.
+- Create the `catalog` user with a password and give them the ability to create databases:
+  ```
+  postgres=# CREATE ROLE catalog WITH LOGIN PASSWORD 'catalog';
+  postgres=# ALTER ROLE catalog CREATEDB;
+  ```
 
-2. Make sure PostgreSQL is not allowing remote connections. 
-To check that, open the `/etc/postgresql/9.5/main/pg_hba.conf` file and make sure it looks like this, if you removed the comments:
+- List the existing roles: `\du`. The output should be like this:
+  ```
+                                     List of roles
+   Role name |                         Attributes                         | Member of 
+  -----------+------------------------------------------------------------+-----------
+   catalog   | Create DB                                                  | {}
+   postgres  | Superuser, Create role, Create DB, Replication, Bypass RLS | {}
+  ```
 
-```
-local   all             postgres                                peer
-local   all             all                                     peer
-host    all             all             127.0.0.1/32            md5
-host    all             all             ::1/128                 md5
-```
+- Exit psql: `\q`.
+- Switch back to the `grader` user: `exit`.
+- Create a new Linux user called `catalog`: `sudo adduser catalog`. Enter password and fill out information.
+- Give to `catalog` user the permission to sudo. Run: `sudo visudo`.
+- Search for the lines that looks like this:
+  ```
+  root    ALL=(ALL:ALL) ALL
+  grader  ALL=(ALL:ALL) ALL
+  ```
 
-#### Create a new PostgreSQL user named `catalog` with limited permissions
+- Below this line, add a new line to give sudo privileges to `catalog` user.
+  ```
+  root    ALL=(ALL:ALL) ALL
+  grader  ALL=(ALL:ALL) ALL
+  catalog  ALL=(ALL:ALL) ALL
+  ```
 
-3. PostgreSQL creates a Linux user with the name postgres during installation; switch to this user by running `sudo su - postgres` (for security reasons, it is important to only use the postgres user for accessing the PostgreSQL software).
+- Save and exit using CTRL+X and confirm with Y.
+- Verify that `catalog` has sudo permissions. Run `su - catalog`, enter the password, run `sudo -l` and enter the password again. The output should be like this:
 
-4. Open PostgreSQL interactive terminal by running: `psql`.
+  ```
+  Matching Defaults entries for catalog on ip-172-26-13-170.us-east-2.compute.internal:
+      env_reset, mail_badpass,
+      secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
+  
+  User catalog may run the following commands on ip-172-26-13-170.us-east-2.compute.internal:
+      (ALL : ALL) ALL
+  ```
 
-5. Create the catalog user with a password by running:<br>
-`postgres=# CREATE ROLE catalog WITH PASSWORD 'catalog';`
+- While logged in as `catalog`, create a database: `createdb catalog`.
+- Run `psql` and then run `\l` to see that the new database has been created. The output should be like this:
+  ```
+                                    List of databases
+     Name    |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges   
+  -----------+----------+----------+-------------+-------------+-----------------------
+   catalog   | catalog  | UTF8     | en_US.UTF-8 | en_US.UTF-8 | 
+   postgres  | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | 
+   template0 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
+             |          |          |             |             | postgres=CTc/postgres
+   template1 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
+             |          |          |             |             | postgres=CTc/postgres
+  (4 rows)
+  ```
+- Exit psql: `\q`.
+- Switch back to the `grader` user: `exit`.
 
-6. Give to our new user the ability to create databases:<br>
-`postgres=# ALTER ROLE catalog CREATEDB;`
+**Reference**
+- DigitalOcean, [How To Secure PostgreSQL on an Ubuntu VPS](https://www.digitalocean.com/community/tutorials/how-to-secure-postgresql-on-an-ubuntu-vps)
 
-7. List the existing roles:<br>
-`postgres=# \du`
 
-Your output should look like the following:
-```
-                                   List of roles
- Role name |                         Attributes                         | Member of 
------------+------------------------------------------------------------+-----------
- catalog   | Create DB                                                  | {}
- postgres  | Superuser, Create role, Create DB, Replication, Bypass RLS | {}
-```
 
-8. Exit psql by running `\q`.
+### Step 12: Install git
 
-9. Switch back to the `grader` user by running `exit`.
-
-#### Create a Linux user called `catalog`
-
-10. Create a new Linux user called catalog by running: `sudo adduser catalog`. Enter password and fill out information.
-
-11. Give to catalog user the permission to sudo. Run `sudo visudo`.
-
-12. Search for the lines that looks like this:
-```
-root    ALL=(ALL:ALL) ALL
-grader  ALL=(ALL:ALL) ALL
-```
-
-13. Below this line, add a new line to give sudo privileges to `catalog` user like this:
-```
-root    ALL=(ALL:ALL) ALL
-grader  ALL=(ALL:ALL) ALL
-catalog  ALL=(ALL:ALL) ALL
-```
-
-14. Save and close the file by hitting **Ctrl-X**, followed by **Y**, and then hit **Enter** to confirm.
-
-15. Verify that `catalog` has sudo permissions. Run `su - catalog`, enter the password, run `sudo -l` and enter the password again. You should see like this:
-
-```
-Matching Defaults entries for catalog on ip-172-26-13-170.us-east-2.compute.internal:
-    env_reset, mail_badpass,
-    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
-
-User catalog may run the following commands on ip-172-26-13-170.us-east-2.compute.internal:
-    (ALL : ALL) ALL
-```
-
-#### Create a database called `catalog`
-
-16. While logged in as `catalog`, create a database called catalog by running `createdb catalog`.
-
-17. Run `psql` and then run `\l` to see that the new database has been created.
-
-Your output should look like the following:
-```
-                                  List of databases
-   Name    |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges   
------------+----------+----------+-------------+-------------+-----------------------
- catalog   | catalog  | UTF8     | en_US.UTF-8 | en_US.UTF-8 | 
- postgres  | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | 
- template0 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
-           |          |          |             |             | postgres=CTc/postgres
- template1 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
-           |          |          |             |             | postgres=CTc/postgres
-(4 rows)
-```
-
-18. Exit psql by running `\q`.
-
-19. Switch back to the `grader` user by running `exit`.
-
-### 12. Install git
-
-Install `git` by running the following commans: `sudo apt-get install git`.
+- While logged in as `grader`, install `git`: `sudo apt-get install git`.
 
 ## Deploy the Item Catalog project
 
-### 13. Clone and setup the Item Catalog project from the Github repository 
+### Step 13.1: Clone and setup the Item Catalog project from the GitHub repository 
 
-#### Clone the Item Catalog project
-
-1. Create a directory called `catalog` in the `/var/www/` directory by running: `sudo mkdir catalog`.
-
-2. Change to the `/var/www/catalog` directory, and clone the catalog project:<br>
+- While logged in as `grader`, create `/var/www/catalog/` directory.
+- Change to that directory and clone the catalog project:<br>
 `sudo git clone https://github.com/boisalai/udacity-catalog-app.git catalog`.
+- From the `/var/www` directory, change the ownership of the `catalog` directory to `grader` using: `sudo chown -R grader:grader catalog/`.
+- Change to the `/var/www/catalog/catalog` directory.
+- Rename the `application.py` file to `__init__.py` using: `mv application.py __init__.py`.
 
-#### Setup the Item Catalog Project
+- In `__init__.py`, replace line 27:
+  ```
+  # app.run(host="0.0.0.0", port=8000, debug=True)
+  app.run()
+  ```
 
-3. From the `/var/www` directory, change the ownership of the `catalog` directory to `grader` by running:<br>
-`sudo chown -R grader:grader catalog/`.
+- In `database.py`, replace line 9:
+   ```
+   # engine = create_engine("sqlite:///catalog.db")
+   engine = create_engine('postgresql://catalog:PASSWORD@localhost/catalog')
+   ``` 
 
-4. Change to the `/var/www/catalog/catalog` directory.
+### Step 13.2: Authenticate login through Google
 
-5. Rename the `application.py` file to `__init__.py` by running `mv application.py __init__.py`.
-
-6. In `__init__.py`, replace line 27<br>
-`app.run(host="0.0.0.0", port=8000, debug=True)` by<br>
-`app.run()`.
-
-7. In `database.py`, replace line 9<br>
-`engine = create_engine("sqlite:///catalog.db")` by<br>
-`engine = create_engine('postgresql://catalog:PASSWORD@localhost/catalog')`. 
-
-<!--
-$ sudo chown -R www-data:www-data /var/www/catalogApp/
-Concernant la précédente instruction, voir ... faudra chercher davantage pour savoir pourquoi.
--->
-
-#### Authenticate login through Google
-
-Create a new project on the Google API Console.
-
-8. Go to https://console.cloud.google.com/ of Google Cloud Plateform.
-
-9. Click `APIs & services` on left menu.
-
-10. Click `Credentials`.
-
-11. Create an OAuth Client ID (under the Credentials tab), and make sure to add http://XX.XX.XX.XX and 
-http://ec2-XX-XX-XX-XX.compute-1.amazonaws.com as authorized JavaScript 
+- Go to [Google Cloud Plateform](https://console.cloud.google.com/).
+- Click `APIs & services` on left menu.
+- Click `Credentials`.
+- Create an OAuth Client ID (under the Credentials tab), and add http://13.59.39.163 and 
+http://ec2-13-59-39-163.us-east-2.compute.amazonaws.com as authorized JavaScript 
 origins.
-
-12. Add http://ec2-XX-XX-XX-XX.compute-1.amazonaws.com/login, 
-http://ec2-XX-XX-XX-XX.compute-1.amazonaws.com/gconnect, 
-and http://ec2-XX-XX-XX-XX.compute-1.amazonaws.com/oauth2callback 
+- Add http://ec2-13-59-39-163.us-east-2.compute.amazonaws.com/login, 
+http://ec2-13-59-39-163.us-east-2.compute.amazonaws.com/gconnect, 
+and http://ec2-13-59-39-163.us-east-2.compute.amazonaws.com/oauth2callback 
 as authorized redirect URIs.
+- Download the corresponding JSON file, open it et copy the contents.
+- Open `/var/www/catalog/catalog/client_secret.json` and paste the previous contents into the this file.
+- Replace the client ID to line 25 of the `templates/login.html` file in the project directory.
 
-<!--
-OAuth client
-Here is your client ID:
-534192602257-j2ednqkkgkc373ivi0e95pj9msbq9207.apps.googleusercontent.com
-Here is your client secret:
-ipqoZMk97Wh5VGbZkIY6gPGl
--->
 
-13. Download the corresponding JSON file, open it et copy the contents.
+### Step 13.3: Authenticate login through Facebook
 
-14. Open `/var/www/catalog/catalog/client_secret.json` and paste the previous contents into the this file.
-
-15. Replace the client ID to line 25 of the `templates/login.html` file in the project directory.
-
-#### Authenticate login through Facebook
-
-Create a new app at Facebook for Developers
-
-16. Go to https://developers.facebook.com/.
-
-17. Click `My Apps` and click `Add a New App`. 
-
-18. Enter as `Display Name` then name `catalog`, enter your email and click 
+- Go to [Facebook for Developers](https://developers.facebook.com/).
+- Click `My Apps` and click `Add a New App`. 
+- Enter as `Display Name` then name `catalog`, enter your email and click 
 `Create App ID`.
+- Click `Set Up` button of the `Facebook Login` card.
+- Choose Web Plateform.
+- Enter `http://13.59.39.163/` as site URL and ckick `Save` button.
+- Click `Settings` under `Facebook Login`, and put `http://13.59.39.163/` and 
+`http://ec2-13-59-39-163.us-east-2.compute.amazonaws.com/` as the Valid OAuth redirect URIs, and click `Save Changes` button.
+- Click `Dashboard` on left menu. You should see `API Version` and `App ID` for the `catalog` application.
+- Replace the `appId` and `version`, respectively on lines 74 and 78 of the `templates/login.html`, with the correspoding `App ID` and `API Version`.
 
-19. Click `Set Up` button of the `Facebook Login` card.
+### Step 14.1: Install the virtual environment and dependencies
 
-20. Choose Web Plateform.
+- While logged in as `grader`, install pip: `sudo apt-get install python3-pip`.
+- Install the virtual environment: `sudo apt-get install python-virtualenv`
+- Change to the `/var/www/catalog/catalog/` directory.
+- Create the virtual environment: `sudo virtualenv -p python3 venv3`.
+- Change the ownership to `grader` with: `sudo chown -R grader:grader venv3/`.
+- Activate the new environment: `. venv3/bin/activate`.
+- Install the following dependencies:
+  ```
+  pip install httplib2
+  pip install requests
+  pip install --upgrade oauth2client
+  pip install sqlalchemy
+  pip install flask
+  sudo apt-get install libpq-dev
+  pip install psycopg2
+  ```
 
-21. Enter `http://XX.XX.XX.XX/` as site URL and ckick `Save` button.
-
-22. Click `Settings` under `Facebook Login`, and put `http://XX.XX.XX.XX/` and 
-`http://ec2-XX-XX-XX-XX.compute-1.amazonaws.com/` as the Valid OAuth redirect URIs, and click `Save Changes` button.
-
-<!--
-52.14.148.42
-http://52.14.148.42/
-http://ec2-52-14-148-42.compute-1.amazonaws.com/
--->
-
-23. Click `Dashboard` on left menu. You should see `API Version` and `App ID` for the `catalog` application.
-
-23. Replace the `appId` and `version`, respectively on lines 74 and 78 of the `templates/login.html`, with the correspoding `App ID` and `API Version`.
-
-### 14. Set it up in your server so that it functions correctly when visiting your server’s IP address in a browser. 
-
-#### Set up a virtual environment 
-
-1. Install pip with the following command: `sudo apt-get install python-pip`.
-
-2. Install the virtual environment by running: `sudo apt-get install python-virtualenv`.
-
-3. Change to the `/var/www/catalog/catalog/` directory.
-
-4. Create the virtual environment by running: `virtualenv venv`.
-
-5. Activate the new environment by running `. venv/bin/activate`.
-
-#### Install dependencies
-
-6. With the virtual environment active, install the following dependenies (note: with the exception of the libpq-dev package, make sure to not use sudo for any of the package installations as this will cause the packages to be installed globally rather than within the virtualenv):
-
-`pip install httplib2`
-
-`pip install requests`
-
-`pip install --upgrade oauth2client`
-
-`pip install sqlalchemy`
-
-`pip install flask`
-
-`sudo apt-get install libpq-dev` (Note: this will install to the global evironment)
-
-`pip install psycopg2`
-
-7. In order to make sure everything was installed correctly, run `python __init__.py`. The following (among other things) should be returned:
-
-```
-* Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
-```
-
-8. Deactivate the virtual environment by running `deactivate`.
-
-#### Set up and enable a virtual host
-
-9. Create a file in `/etc/apache2/sites-available/` called `catalog.conf`.
-
-10. Add the following into the file:
-
-```
-<VirtualHost *:80>
-		ServerName XX.XX.XX.XX
-		ServerAdmin ay.boisvert@gmail.com
-		WSGIScriptAlias / /var/www/catalog/catalog.wsgi
-		<Directory /var/www/catalog/catalog/>
-			Order allow,deny
-			Allow from all
-			Options -Indexes
-		</Directory>
-		Alias /static /var/www/catalog/catalog/static
-		<Directory /var/www/catalog/catalog/static/>
-			Order allow,deny
-			Allow from all
-			Options -Indexes
-		</Directory>
-		ErrorLog ${APACHE_LOG_DIR}/error.log
-		LogLevel warn
-		CustomLog ${APACHE_LOG_DIR}/access.log combined
-</VirtualHost>
-```
+- Run `python3 __init__.py` and you should see:
 
 <!--
-52.14.148.42
+Tabarnak, j'obtiens...
+
+Traceback (most recent call last):
+  File "__init__.py", line 10, in <module>
+    from views.category import category
+  File "/var/www/catalog/catalog/views/category.py", line 5, in <module>
+    from models.category import Category
+  File "/var/www/catalog/catalog/models/category.py", line 8, in <module>
+    from user import User
+
+Je dois faire trois modifications à mon code...
+Il faudrait ajouter ces instructions dans mon README.md
+
+Dans le fichier "/var/www/catalog/catalog/models/category.py", à la ligne 8
+Je remplace "from user import User" par "from models.user import User"
+
+Dans le fichier "/var/www/catalog/catalog/models/item.py", à la ligne 9
+Je remplace "from category import Category" par "from models.category import Category"
+
+Dans le fichier "/var/www/catalog/catalog/models/item.py", à la ligne 10
+Je remplace "from user import User" par "from models.user import User"
 -->
 
-Note: the `Options -Indexes` lines ensure that listings for these directories in the browser is disabled.
+  ```
+  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+  ```
 
-11. Run `sudo a2ensite catalog` to enable the virtual host. The following prompt will be returned:
-```
-Enabling site catalog.
-To activate the new configuration, you need to run:
-  service apache2 reload
-```
+- Deactivate the virtual environment: `deactivate`.
 
-12. Reload Apache by running: `sudo service apache2 reload`.
-
-#### Write the catalog.wsgi file 
-
-Apache serves Flask applications by using a .wsgi file.
-
-13. Create a file called `catalog.wsgi` in `/var/www/catalog` directory.
-
-14. Add the following to the file:
-
-```
-activate_this = '/var/www/catalog/catalog/venv/bin/activate_this.py'
-execfile(activate_this, dict(__file__=activate_this))
-
-#!/usr/bin/python
-import sys
-import logging
-logging.basicConfig(stream=sys.stderr)
-sys.path.insert(0, "/var/www/catalog/")
-
-from nuevoMexico import app as application
-application.secret_key = "12345"
-```
-
-15. Restart Apache by running: `sudo service apache2 restart`.
-
-#### Disable the default Apache site
-
-16. At some point during the configuration, the default Apache site will likely need to be disabled; to do this, run `sudo a2dissite 000-default.conf`. The following prompt will be returned:
-
-```
-Site 000-default disabled.
-To activate the new configuration, you need to run:
-  service apache2 reload
-```
-
-17. Reload Apache by running: `sudo service apache2 reload`.
-
-#### Change the ownership of the project directories
-
-18. Change the ownership of the project directories and files to the `www-data` user (this is done because Apache runs as the `www-data` user); while in the `/var/www` directory, run: `sudo chown -R www-data:www-data catalog/`.
-
-#### Set up the database schema and populate the database
-
-19. While in the `/var/www/catalog/catalog/` directory, activate the virtual environment by running `. venv/bin/activate`.
-
-20. Then run `python data.py`.
-
-#### Correct problems
-
-We get the following error message:
-
-```
-sqlalchemy.exc.DataError: (psycopg2.DataError) value too long for type character varying(250)
-```
-
-To correct this problem, you need to modify the `data.py` file slightly:
-- replace `lig.random_para(250)` by `lig.random_para(240)` on lines 86, 143, 191, 234 and 280.
-- add the following instructions after line 16:<br>
-```
-# Delete all rows.
-session.query(Item).delete()
-session.query(Category).delete()
-session.query(User).delete()
-```
-
-https://stackoverflow.com/questions/6357361/alternative-to-execfile-in-python-3
+**References**
+- Flask documentation, [virtualenv](http://flask.pocoo.org/docs/0.12/installation/)
+- [Create a Python 3 virtual environment](https://superuser.com/questions/1039369/create-a-python-3-virtual-environment)
 
 
-21. Then run again `python data.py`.
 
-22. Deactivate the virtualenv (run `deactivate`).
 
-23. Resart Apache again: `sudo service apache2 restart`.
 
-24. Now open up a browser and check to make sure the app is working by going to http://XX.XX.XX.XX or http://ec2-XX-XX-XX-XX.compute-1.amazonaws.com
+
+### Step 14.2: Set up and enable a virtual host
+
+- Add the following line in `/etc/apache2/mods-enabled/wsgi.conf` file 
+to use Python 3.
+
+  ```
+  #WSGIPythonPath directory|directory-1:directory-2:...
+  WSGIPythonPath /var/www/catalog/catalog/venv3/lib/python3.5/site-packages
+  ```
+
+- Create `/etc/apache2/sites-available/catalog.conf` and add the 
+following lines to configure the virtual host:
+
+  ```
+  <VirtualHost *:80>
+	  ServerName 13.59.39.163
+    ServerAlias ec2-13-59-39-163.us-west-2.compute.amazonaws.com
+	  WSGIScriptAlias / /var/www/catalog/catalog.wsgi
+	  <Directory /var/www/catalog/catalog/>
+	  	Order allow,deny
+		  Allow from all
+	  </Directory>
+	  Alias /static /var/www/catalog/catalog/static
+	  <Directory /var/www/catalog/catalog/static/>
+		  Order allow,deny
+		  Allow from all
+	  </Directory>
+	  ErrorLog ${APACHE_LOG_DIR}/error.log
+	  LogLevel warn
+	  CustomLog ${APACHE_LOG_DIR}/access.log combined
+  </VirtualHost>
+  ```
+
+- Enable virtual host: `sudo a2ensite catalog`. The following prompt will be returned:
+  ```
+  Enabling site catalog.
+  To activate the new configuration, you need to run:
+    service apache2 reload
+  ```
+
+- Reload Apache: `sudo service apache2 reload`.
+
+**Resources** 
+- [Getting Flask to use Python3 (Apache/mod_wsgi)](https://stackoverflow.com/questions/30642894/getting-flask-to-use-python3-apache-mod-wsgi)
+- [Run mod_wsgi with virtualenv or Python with version different that system default](https://stackoverflow.com/questions/27450998/run-mod-wsgi-with-virtualenv-or-python-with-version-different-that-system-defaul)
+
+
+### Step 14.3: Set up the Flask application
+
+- Create `/var/www/catalog/catalog.wsgi` file add the following lines:
+
+  ```
+  activate_this = '/var/www/catalog/catalog/venv3/bin/activate_this.py'
+  with open(activate_this) as file_:
+      exec(file_.read(), dict(__file__=activate_this))
+
+  #!/usr/bin/python
+  import sys
+  import logging
+  logging.basicConfig(stream=sys.stderr)
+  sys.path.insert(0, "/var/www/catalog/catalog/")
+  sys.path.insert(1, "/var/www/catalog/")
+
+  from catalog import app as application
+  application.secret_key = "..."
+  ```
+
+- Restart Apache: `sudo service apache2 restart`.
+
+**Resource** 
+- Flask documentation, [Working with Virtual Environments](http://flask.pocoo.org/docs/0.12/deploying/mod_wsgi/#working-with-virtual-environments)
+
+
+### Step 14.4: Set up the database schema and populate the database
+
+- Edit `/var/www/catalog/catalog/data.py`.
+- Replace `lig.random_para(250)` by `lig.random_para(240)` on lines 86, 143, 191, 234 and 280.
+
+- Add the these two lines at the beginning of the file.
+
+  ```
+  import sys
+  sys.path.insert(0, "/var/www/catalog/catalog/venv3/lib/python3.5/site-packages") 
+  ```
+
+- Add the following lines under `create_db()`.
+
+  ```
+  # Create database.
+  create_db()
+
+  # Delete all rows.
+  session.query(Item).delete()
+  session.query(Category).delete()
+  session.query(User).delete()
+  ```
+
+- From the `/var/www/catalog/catalog/` directory, 
+activate the virtual environment: `. venv3/bin/activate`.
+- Run: `python data.py`.
+- Deactivate the virtual environment: `deactivate`.
+
+### Step 14.5: Disable the default Apache site
+
+- Disable the default Apache site: `sudo a2dissite 000-default.conf`. 
+The following prompt will be returned:
+
+  ```
+  Site 000-default disabled.
+  To activate the new configuration, you need to run:
+    service apache2 reload
+  ```
+
+- Reload Apache: `sudo service apache2 reload`.
+
+### Step 14.6: Launch the Web Application
+
+- Change the ownership of the project directories: `sudo chown -R www-data:www-data catalog/`.
+- Restart Apache again: `sudo service apache2 restart`.
+- Open your browser to http://13.59.39.163 or http://ec2-13-59-39-163.us-east-2.compute.amazonaws.com
 
 <!--
-http://52.14.148.42/
-http://ec2-52-14-148-42.compute-1.amazonaws.com/
+http://13.59.39.163/
+http://ec2-13-59-39-163.us-east-2.compute.amazonaws.com
+ServerAlias ec2-13-59-39-163.us-east-2.compute.amazonaws.com
 -->
 
-<!--
-J'obtiens un erreur "500 Internal Server Error"
-sudo tail /var/log/apache2/error.log
--->
+After these operations, the folder structure should look like:
+
+``` 
+/var/www/catalog
+    |-- catalog.wsgi
+    |__ /catalog             # Our Application Module
+         |-- __init__.py
+         |-- data.py
+         |-- database.py
+         |-- /models
+              |-- __init__.py
+              |-- category.py
+              |-- item.py
+              |__ user.py   
+         |-- /static
+              |__ styles.css
+         |-- /templates
+              |-- about.html
+              |-- base.html
+              |-- categories.html
+              |-- delete_item.html 
+              |-- edit_item.html
+              |-- login.html
+              |-- new_item.html
+              |__ show_item.html
+         |-- /utils
+              |__ lorem_ipsum_generator.py
+         |-- /venv3          # Virtual Environment
+         |__ /views
+              |-- __init__.py
+              |-- about.py
+              |-- api.py
+              |-- auth.py
+              |-- category_view.py
+              |-- item_view.py
+              |__ user_view.py
+```
+
+
+## Other Resources
+
+- DigitalOcean [How To Deploy a Flask Application on an Ubuntu VPS](https://www.digitalocean.com/community/tutorials/how-to-deploy-a-flask-application-on-an-ubuntu-vps)
+- GitHub Repositories 
+  - [adityamehra/udacity-linux-server-configuration](https://github.com/adityamehra/udacity-linux-server-configuration)
+  - [anumsh/Linux-Server-Configuration](https://github.com/anumsh/Linux-Server-Configuration)
+  - [bencam/linux-server-configuration](https://github.com/bencam/linux-server-configuration)
+  - [iliketomatoes/linux_server_configuration](https://github.com/iliketomatoes/linux_server_configuration)
 
 
 
 
-## Sources
 
-This is a list of sources I used to complete this project.
 
-Digital Ocean tutorial: [How To Add and Delete Users on an Ubuntu 14.04 VPS](https://www.digitalocean.com/community/tutorials/how-to-add-and-delete-users-on-an-ubuntu-14-04-vps)
 
-GitHub Repository: [bencam/linux-server-configuration](https://github.com/bencam/linux-server-configuration)
 
-GitHub Repository: [adityamehra/udacity-linux-server-configuration](https://github.com/adityamehra/udacity-linux-server-configuration)
 
-http://sageelliott.com/post/post2-AWS-Flask_setup/
+# CONSERVER CI-DESSOUS.
+
+
+Try adding
+ __table_args__ = {'extend_existing': True} 
+to your User class right under __tablename__=
+
+```
+class Category(Base):
+    __tablename__ = "category"
+    __table_args__ = {'extend_existing': True} 
+    [...]
+
+class Item(Base):
+    __tablename__ = "item"
+    __table_args__ = (
+        UniqueConstraint('category_id', 'title', name='key'), 
+        {'extend_existing': True} 
+        ) 
+    [...]
+
+class User(Base):
+    __tablename__ = 'user'
+    __table_args__ = {'extend_existing': True} 
+    [...]
+```
+
+Dans /models/catagory.py et item.py j'ai ajouté des double-guilemmet
+comme dans user = relationship("User")
+
+
+
+
+
