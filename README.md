@@ -7,7 +7,7 @@ This page explains how to secure and set up a Linux distribution on a virtual ma
 - The virtual private server is [Amazon Lighsail](https://lightsail.aws.amazon.com/).
 - The web application is my [Item Catalog project](https://github.com/boisalai/udacity-catalog-app) created earlier in this Nanodegree program.
 - The database server is [PostgreSQL](https://www.postgresql.org/).
-- My local machine is a MacBook Pro.
+- My local machine is a MacBook Pro (Mac OS X 10_12_6).
 
 You can visit http://13.59.39.163/ or http://ec2-13-59-39-163.us-east-2.compute.amazonaws.com for the website deployed.
 
@@ -24,7 +24,7 @@ You can visit http://13.59.39.163/ or http://ec2-13-59-39-163.us-east-2.compute.
 - Wait for the instance to start up.
 
 **Reference**
-- ServerPilot, [How to Create a Server on Amazon Lightsail](https://serverpilot.io/community/articles/how-to-create-a-server-on-amazon-lightsail.html)
+- ServerPilot, [How to Create a Server on Amazon Lightsail](https://serverpilot.io/community/articles/how-to-create-a-server-on-amazon-lightsail.html).
 
 
 ### Step 2: SSH into the server
@@ -97,10 +97,10 @@ sudo apt-get upgrade
 
 - Click on the `Manage` option of the Amazon Lightsail Instance, 
 then the `Networking` tab, and then change the firewall configuration to match the internal firewall settings above.
-<img src="images/screen4.png" width="600px">
+  <img src="images/screen4.png" width="600px">
 
 - Allow ports 80(TCP), 123(UDP), and 2200(TCP), and deny the default port 22.
-<img src="images/screen5.png" width="600px">
+  <img src="images/screen5.png" width="600px">
 
 - From your local terminal, run: `ssh -i ~/.ssh/lightsail_key.rsa -p 2200 ubuntu@13.59.39.163`, where `13.59.39.163` is the public IP address of the instance.
 
@@ -110,11 +110,11 @@ ssh -i ~/.ssh/lightsail_key.rsa -p 2200 ubuntu@13.59.39.163
 -->
 
 **References**
-- Official Ubuntu Documentation, [UFW - Uncomplicated Firewall](https://help.ubuntu.com/community/UFW)
-- TechRepublic, [How to install and use Uncomplicated Firewall in Ubuntu](https://www.techrepublic.com/article/how-to-install-and-use-uncomplicated-firewall-in-ubuntu/)
+- Official Ubuntu Documentation, [UFW - Uncomplicated Firewall](https://help.ubuntu.com/community/UFW).
+- TechRepublic, [How to install and use Uncomplicated Firewall in Ubuntu](https://www.techrepublic.com/article/how-to-install-and-use-uncomplicated-firewall-in-ubuntu/).
 
 
-## Give grader access
+## Give `grader` access
 
 
 ### Step 6: Create a new user account named `grader`
@@ -153,7 +153,7 @@ run `sudo -l` and enter the password again. The output should be like this:
 - DigitalOcean, [How To Add and Delete Users on an Ubuntu 14.04 VPS](https://www.digitalocean.com/community/tutorials/how-to-add-and-delete-users-on-an-ubuntu-14-04-vps)
 
 
-### Step 8: Create an SSH key pair for grader using the `ssh-keygen` tool
+### Step 8: Create an SSH key pair for `grader` using the `ssh-keygen` tool
 
 - On the local machine:
   - Run `ssh-keygen`
@@ -175,6 +175,13 @@ ssh -i ~/.ssh/grader_key -p 2200 grader@13.59.39.163
 le paraphrase est grader
 -->
 
+**References**
+- DigitalOcean, [How To Set Up SSH Keys](https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys--2).
+- Ubuntu Wiki, [SSH/OpenSSH/Keys](https://help.ubuntu.com/community/SSH/OpenSSH/Keys).
+
+
+
+
 ## Prepare to deploy the project
 
 ### Step 9: Configure the local timezone to UTC
@@ -188,8 +195,8 @@ le paraphrase est grader
   ```
 
 **References**
-- Ubuntu Official Documentation, [UbuntuTime](https://help.ubuntu.com/community/UbuntuTime)
-- [How do I change my timezone to UTC/GMT?](https://askubuntu.com/questions/138423/how-do-i-change-my-timezone-to-utc-gmt/138442)
+- Ubuntu Wiki, [UbuntuTime](https://help.ubuntu.com/community/UbuntuTime)
+- Ask Ubuntu, [How do I change my timezone to UTC/GMT?](https://askubuntu.com/questions/138423/how-do-i-change-my-timezone-to-utc-gmt/138442)
 
 
 
@@ -197,10 +204,9 @@ le paraphrase est grader
 
 - While logged in as `grader`, install Apache: `sudo apt-get install apache2`.
 - Enter public IP of the Amazon Lightsail instance into browser. If Apache is working, you should see:
-<img src="images/screen6.png" width="600px">
+  <img src="images/screen6.png" width="600px">
 
-- My project is built with Python 3. So, I
-need to install the Python 3 mod_wsgi package:  
+- My project is built with Python 3. So, I need to install the Python 3 mod_wsgi package:  
  `sudo apt-get install libapache2-mod-wsgi-py3`.
 - Enable `mod_wsgi` using: `sudo a2enmod wsgi`.
 
@@ -281,7 +287,7 @@ need to install the Python 3 mod_wsgi package:
 - Switch back to the `grader` user: `exit`.
 
 **Reference**
-- DigitalOcean, [How To Secure PostgreSQL on an Ubuntu VPS](https://www.digitalocean.com/community/tutorials/how-to-secure-postgresql-on-an-ubuntu-vps)
+- DigitalOcean, [How To Secure PostgreSQL on an Ubuntu VPS](https://www.digitalocean.com/community/tutorials/how-to-secure-postgresql-on-an-ubuntu-vps).
 
 
 
@@ -320,15 +326,13 @@ need to install the Python 3 mod_wsgi package:
 - Create an OAuth Client ID (under the Credentials tab), and add http://13.59.39.163 and 
 http://ec2-13-59-39-163.us-east-2.compute.amazonaws.com as authorized JavaScript 
 origins.
-- Add http://ec2-13-59-39-163.us-east-2.compute.amazonaws.com/login, 
-http://ec2-13-59-39-163.us-east-2.compute.amazonaws.com/gconnect, 
-and http://ec2-13-59-39-163.us-east-2.compute.amazonaws.com/oauth2callback 
-as authorized redirect URIs.
+- Add http://ec2-13-59-39-163.us-east-2.compute.amazonaws.com/oauth2callback 
+as authorized redirect URI.
 - Download the corresponding JSON file, open it et copy the contents.
 - Open `/var/www/catalog/catalog/client_secret.json` and paste the previous contents into the this file.
 - Replace the client ID to line 25 of the `templates/login.html` file in the project directory.
 
-
+<!--
 ### Step 13.3: Authenticate login through Facebook
 
 - Go to [Facebook for Developers](https://developers.facebook.com/).
@@ -342,6 +346,8 @@ as authorized redirect URIs.
 `http://ec2-13-59-39-163.us-east-2.compute.amazonaws.com/` as the Valid OAuth redirect URIs, and click `Save Changes` button.
 - Click `Dashboard` on left menu. You should see `API Version` and `App ID` for the `catalog` application.
 - Replace the `appId` and `version`, respectively on lines 74 and 78 of the `templates/login.html`, with the correspoding `App ID` and `API Version`.
+- Open `/var/www/catalog/catalog/fb_client_secrets.json` file and replace `app_id` and `app_secret`.
+-->
 
 ### Step 14.1: Install the virtual environment and dependencies
 
@@ -363,31 +369,6 @@ as authorized redirect URIs.
   ```
 
 - Run `python3 __init__.py` and you should see:
-
-<!--
-Tabarnak, j'obtiens...
-
-Traceback (most recent call last):
-  File "__init__.py", line 10, in <module>
-    from views.category import category
-  File "/var/www/catalog/catalog/views/category.py", line 5, in <module>
-    from models.category import Category
-  File "/var/www/catalog/catalog/models/category.py", line 8, in <module>
-    from user import User
-
-Je dois faire trois modifications à mon code...
-Il faudrait ajouter ces instructions dans mon README.md
-
-Dans le fichier "/var/www/catalog/catalog/models/category.py", à la ligne 8
-Je remplace "from user import User" par "from models.user import User"
-
-Dans le fichier "/var/www/catalog/catalog/models/item.py", à la ligne 9
-Je remplace "from category import Category" par "from models.category import Category"
-
-Dans le fichier "/var/www/catalog/catalog/models/item.py", à la ligne 10
-Je remplace "from user import User" par "from models.user import User"
--->
-
   ```
   * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
   ```
@@ -395,8 +376,8 @@ Je remplace "from user import User" par "from models.user import User"
 - Deactivate the virtual environment: `deactivate`.
 
 **References**
-- Flask documentation, [virtualenv](http://flask.pocoo.org/docs/0.12/installation/)
-- [Create a Python 3 virtual environment](https://superuser.com/questions/1039369/create-a-python-3-virtual-environment)
+- Flask documentation, [virtualenv](http://flask.pocoo.org/docs/0.12/installation/).
+- [Create a Python 3 virtual environment](https://superuser.com/questions/1039369/create-a-python-3-virtual-environment).
 
 
 
@@ -522,13 +503,99 @@ The following prompt will be returned:
 
 - Change the ownership of the project directories: `sudo chown -R www-data:www-data catalog/`.
 - Restart Apache again: `sudo service apache2 restart`.
-- Open your browser to http://13.59.39.163 or http://ec2-13-59-39-163.us-east-2.compute.amazonaws.com
+- Open your browser to http://13.59.39.163 or http://ec2-13-59-39-163.us-east-2.compute.amazonaws.com.
 
 <!--
 http://13.59.39.163/
 http://ec2-13-59-39-163.us-east-2.compute.amazonaws.com
 ServerAlias ec2-13-59-39-163.us-east-2.compute.amazonaws.com
 -->
+
+
+## Fix some issues
+
+### Step 15.1: Log in with Google OAuth
+
+- When I try to log in with Google OAuth 2.0, I get the following error:
+  ```
+  TypeError: the JSON object must be str, not 'bytes'
+  ```
+- To correct that problem, edit `views/auth.py` using: `sudo nano -c auth.py`.
+- Near line 60, add `.decode("utf-8")` to the `request(url, "GET")` instruction like that:
+  ```
+  h = httplib2.Http()
+  # result = json.loads(h.request(url, "GET")[1]
+  result = json.loads(h.request(url, "GET")[1].decode("utf-8"))
+  ```
+- Save and exit using CTRL+X and confirm with Y.
+- Reload Apache: `sudo service apache2 reload`.
+
+<!--
+### Step 15.2: Log in with Facebook OAuth
+
+- When I try to log in with Facebook OAuth, I get the following error:
+  ```
+  FileNotFoundError: [Errno 2] No such file or directory: 'fb_client_secrets.json'
+  ```
+- To correct that problem, edit `views/auth.py` using: `sudo nano -c auth.py`.
+- Near line 171 of this file, indicate the full path of the `fb_client_secrets.json` file:
+  ```
+  app_id = json.loads(
+        open("/var/www/catalog/catalog/fb_client_secrets.json", "r")
+        .read())["web"]["app_id"]
+  app_secret = json.loads(
+        open("/var/www/catalog/catalog/fb_client_secrets.json", "r")
+        .read())["web"]["app_secret"]
+  ```
+- Save and exit using CTRL+X and confirm with Y.
+- Reload Apache: `sudo service apache2 reload`.
+
+### Step 15.3: 
+
+Try adding
+ __table_args__ = {'extend_existing': True} 
+to your User class right under __tablename__=
+
+```
+class Category(Base):
+    __tablename__ = "category"
+    __table_args__ = {'extend_existing': True} 
+    [...]
+
+class Item(Base):
+    __tablename__ = "item"
+    __table_args__ = (
+        UniqueConstraint('category_id', 'title', name='key'), 
+        {'extend_existing': True} 
+        ) 
+    [...]
+
+class User(Base):
+    __tablename__ = 'user'
+    __table_args__ = {'extend_existing': True} 
+    [...]
+```
+
+Dans /models/catagory.py et item.py j'ai ajouté des double-guilemmet
+comme dans user = relationship("User")
+
+Dans le fichier "/var/www/catalog/catalog/models/category.py", à la ligne 8
+Je remplace "from user import User" par "from models.user import User"
+
+Dans le fichier "/var/www/catalog/catalog/models/item.py", à la ligne 9
+Je remplace "from category import Category" par "from models.category import Category"
+
+Dans le fichier "/var/www/catalog/catalog/models/item.py", à la ligne 10
+Je remplace "from user import User" par "from models.user import User"
+-->
+
+## Useful commands
+
+ - To write to the Apache Error Log: `print("DEBUG", file=sys.stderr)`.
+ - To get log messages from Apache server: `sudo tail /var/log/apache2/error.log`.
+ - To restart Apache: `sudo service apache2 restart`.
+
+## Folder structure
 
 After these operations, the folder structure should look like:
 
@@ -568,8 +635,7 @@ After these operations, the folder structure should look like:
               |__ user_view.py
 ```
 
-
-## Other Resources
+## Other Helpful Resources
 
 - DigitalOcean [How To Deploy a Flask Application on an Ubuntu VPS](https://www.digitalocean.com/community/tutorials/how-to-deploy-a-flask-application-on-an-ubuntu-vps)
 - GitHub Repositories 
@@ -577,46 +643,5 @@ After these operations, the folder structure should look like:
   - [anumsh/Linux-Server-Configuration](https://github.com/anumsh/Linux-Server-Configuration)
   - [bencam/linux-server-configuration](https://github.com/bencam/linux-server-configuration)
   - [iliketomatoes/linux_server_configuration](https://github.com/iliketomatoes/linux_server_configuration)
-
-
-
-
-
-
-
-
-
-# CONSERVER CI-DESSOUS.
-
-
-Try adding
- __table_args__ = {'extend_existing': True} 
-to your User class right under __tablename__=
-
-```
-class Category(Base):
-    __tablename__ = "category"
-    __table_args__ = {'extend_existing': True} 
-    [...]
-
-class Item(Base):
-    __tablename__ = "item"
-    __table_args__ = (
-        UniqueConstraint('category_id', 'title', name='key'), 
-        {'extend_existing': True} 
-        ) 
-    [...]
-
-class User(Base):
-    __tablename__ = 'user'
-    __table_args__ = {'extend_existing': True} 
-    [...]
-```
-
-Dans /models/catagory.py et item.py j'ai ajouté des double-guilemmet
-comme dans user = relationship("User")
-
-
-
 
 
