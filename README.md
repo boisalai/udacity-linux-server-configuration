@@ -591,7 +591,6 @@ Je remplace "from user import User" par "from models.user import User"
 
 ## Useful commands
 
- - To write to the Apache Error Log: `print("DEBUG", file=sys.stderr)`.
  - To get log messages from Apache server: `sudo tail /var/log/apache2/error.log`.
  - To restart Apache: `sudo service apache2 restart`.
 
