@@ -114,6 +114,53 @@ ssh -i ~/.ssh/lightsail_key.rsa -p 2200 ubuntu@13.59.39.163
 - TechRepublic, [How to install and use Uncomplicated Firewall in Ubuntu](https://www.techrepublic.com/article/how-to-install-and-use-uncomplicated-firewall-in-ubuntu/).
 
 
+
+
+## Step 5.1: Use `Fail2Ban` to ban attackers 
+> :+1: This section was added after first review to meet the specifications.
+
+`Fail2Ban` is an intrusion prevention software framework that protects computer servers from brute-force attacks.
+- Install Fail2Ban: `sudo apt-get install fail2ban`.
+- Install sendmail for email notice: `sudo apt-get install sendmail iptables-persistent`.
+- Create a copy of a file: `sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local`.
+- Change the settings in `/etc/fail2ban/jail.local` file:
+  ```
+  set bantime = 600
+  destemail = useremail@domain
+  action = %(action_mwl)s 
+  ```
+- Under `[sshd]` change `port = ssh` by `port = 2200`.
+- Restart the service: `sudo service fail2ban restart`.
+- You should receive an email like this:
+  <img src="images/screen7.png" width="600px">
+
+**References**
+- DigitalOcean, [How To Protect SSH with Fail2Ban on Ubuntu 14.04](https://www.digitalocean.com/community/tutorials/how-to-protect-ssh-with-fail2ban-on-ubuntu-14-04).
+- [Fail2Ban Official website](http://www.fail2ban.org/wiki/index.php/Main_Page).
+
+
+## Step 5.2: Keep the system up to date
+> :+1: This section was added after first review to meet the specifications.
+
+The `unattended-upgrades` package can be used to automatically install important system updates.
+- Enable automatic (security) updates: `sudo apt-get install unattended-upgrades`.
+- Edit `/etc/apt/apt.conf.d/50unattended-upgrades`, uncomment the line `${distro_id}:${distro_codename}-updates` and save it.
+- Modify `/etc/apt/apt.conf.d/20auto-upgrades` file so that the upgrades are downloaded and installed every day:
+  ```
+  APT::Periodic::Update-Package-Lists "1";
+  APT::Periodic::Download-Upgradeable-Packages "1";
+  APT::Periodic::AutocleanInterval "7";
+  APT::Periodic::Unattended-Upgrade "1";
+  ```
+- Enable it: `sudo dpkg-reconfigure --priority=low unattended-upgrades`.
+- Restart Apache: `sudo service apache2 restart`.
+
+**References**
+- Official Ubuntu Documentation, [Automatic Updates](https://help.ubuntu.com/lts/serverguide/automatic-updates.html).
+- Ubuntu Wiki, [AutomaticSecurityUpdates](https://help.ubuntu.com/community/AutomaticSecurityUpdates).
+
+
+
 ## Give `grader` access
 
 
