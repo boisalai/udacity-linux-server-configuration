@@ -11,6 +11,12 @@ This page explains how to secure and set up a Linux distribution on a virtual ma
 
 You can visit http://13.59.39.163/ or http://ec2-13-59-39-163.us-east-2.compute.amazonaws.com for the website deployed.
 
+## Update
+
+:white_check_mark: These two step was added after first review to meet the specifications.
+- [Step 5.1: Use `Fail2Ban` to ban attackers](#step_5_1)
+- [Step 5.2: Automatically install updates](#step_5_2)
+
 ## Get a server
 
 ### Step 1: Start a new Ubuntu Linux server instance on Amazon Lightsail 
@@ -115,9 +121,10 @@ ssh -i ~/.ssh/lightsail_key.rsa -p 2200 ubuntu@13.59.39.163
 
 
 
+<a name="step_5_1"></a>
+### Step 5.1: Use `Fail2Ban` to ban attackers 
 
-## Step 5.1: Use `Fail2Ban` to ban attackers 
-> :+1: This section was added after first review to meet the specifications.
+:white_check_mark: This step was added after first review to meet the specifications.
 
 `Fail2Ban` is an intrusion prevention software framework that protects computer servers from brute-force attacks.
 - Install Fail2Ban: `sudo apt-get install fail2ban`.
@@ -138,9 +145,9 @@ ssh -i ~/.ssh/lightsail_key.rsa -p 2200 ubuntu@13.59.39.163
 - DigitalOcean, [How To Protect SSH with Fail2Ban on Ubuntu 14.04](https://www.digitalocean.com/community/tutorials/how-to-protect-ssh-with-fail2ban-on-ubuntu-14-04).
 - [Fail2Ban Official website](http://www.fail2ban.org/wiki/index.php/Main_Page).
 
-
-## Step 5.2: Keep the system up to date
-> :+1: This section was added after first review to meet the specifications.
+<a name="step_5_2"></a>
+### Step 5.2: Automatically install updates
+:white_check_mark: This step was added after first review to meet the specifications.
 
 The `unattended-upgrades` package can be used to automatically install important system updates.
 - Enable automatic (security) updates: `sudo apt-get install unattended-upgrades`.
