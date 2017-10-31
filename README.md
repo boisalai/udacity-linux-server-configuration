@@ -11,7 +11,10 @@ This page explains how to secure and set up a Linux distribution on a virtual ma
 
 You can visit http://13.59.39.163/ or http://ec2-13-59-39-163.us-east-2.compute.amazonaws.com for the website deployed.
 
-## Update
+## Updates
+
+:white_check_mark: This steps was added after second review to meet the specifications.
+- [Step 5.3: Updated packages to most recent versions](#step_5_3)
 
 :white_check_mark: These two steps was added after first review to meet the specifications.
 - [Step 5.1: Use `Fail2Ban` to ban attackers](#step_5_1)
@@ -165,6 +168,42 @@ The `unattended-upgrades` package can be used to automatically install important
 **References**
 - Official Ubuntu Documentation, [Automatic Updates](https://help.ubuntu.com/lts/serverguide/automatic-updates.html).
 - Ubuntu Wiki, [AutomaticSecurityUpdates](https://help.ubuntu.com/community/AutomaticSecurityUpdates).
+
+
+<a name="step_5_3"></a>
+### Step 5.3: Updated packages to most recent versions
+:white_check_mark: This step was added after second review to meet the specifications.
+
+Some packages have not been updated because the server need to be rebooted. I found the solution [here](https://www.digitalocean.com/community/questions/updating-ubuntu-14-04-security-updates).
+
+- I did these commands:
+  ```
+  sudo apt-get update
+  sudo apt-get dist-upgrade
+  sudo shutdown -r now
+  ```
+
+- Logged back in, and I now see this message:
+  ```
+  Alains-MBP:udacity-linux-server-configuration boisalai$ ssh -i ~/.ssh/lightsail_key.rsa -p 2200 ubuntu@13.59.39.163
+  Welcome to Ubuntu 16.04.3 LTS (GNU/Linux 4.4.0-1039-aws x86_64)
+
+   * Documentation:  https://help.ubuntu.com
+   * Management:     https://landscape.canonical.com
+   * Support:        https://ubuntu.com/advantage
+
+    Get cloud support with Ubuntu Advantage Cloud Guest:
+      http://www.ubuntu.com/business/services/cloud
+
+  0 packages can be updated.
+  0 updates are security updates.
+
+  Last login: Tue Oct 31 06:35:28 2017 from 24.201.154.77
+  ubuntu@ip-172-26-0-7:~$ 
+  ```
+
+**Reference**
+- DigitalOcean, [Updating Ubuntu 14.04 -- Security Updates](https://www.digitalocean.com/community/questions/updating-ubuntu-14-04-security-updates).
 
 
 
