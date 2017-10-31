@@ -13,7 +13,7 @@ You can visit http://13.59.39.163/ or http://ec2-13-59-39-163.us-east-2.compute.
 
 ## Update
 
-:white_check_mark: These two step was added after first review to meet the specifications.
+:white_check_mark: These two steps was added after first review to meet the specifications.
 - [Step 5.1: Use `Fail2Ban` to ban attackers](#step_5_1)
 - [Step 5.2: Automatically install updates](#step_5_2)
 
